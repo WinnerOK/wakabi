@@ -122,6 +122,7 @@ ignore = [
   "D105", # pydocstyle - Missing docstring in magic method
   "D106", # pydocstyle - Missing docstring in public nested class
   "D107", # pydocstyle - Missing docstring in __init__
+  "RUF001", # cyrillic letters
 ]
 unfixable = [
   "F", # pyflakes

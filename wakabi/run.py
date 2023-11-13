@@ -1,9 +1,12 @@
 import asyncio
 
 from telebot.async_telebot import AsyncTeleBot
+from telebot.asyncio_filters import AdvancedCustomFilter
+from telebot.callback_data import CallbackDataFilter
+from telebot.types import CallbackQuery
 
 from wakabi.settings import Settings
-from wakabi.tg_bot import handlers
+from wakabi.tg_bot import callbacks, handlers
 
 
 def register_handlers(bot: AsyncTeleBot) -> None:
@@ -13,10 +16,25 @@ def register_handlers(bot: AsyncTeleBot) -> None:
         pass_bot=True,
     )
 
+    bot.register_callback_query_handler(
+        callbacks.language_level_callback,
+        func=None,
+        config=callbacks.language_level.filter(),
+        pass_bot=True,
+    )
+
+
+class CallbackFilter(AdvancedCustomFilter):
+    key = "config"
+
+    async def check(self, call: CallbackQuery, config: CallbackDataFilter):
+        return config.check(query=call)
+
 
 def main():
     settings = Settings()
     bot = AsyncTeleBot(settings.telegram_token)
+    bot.add_custom_filter(CallbackFilter())
     register_handlers(bot)
 
     asyncio.run(bot.polling())
