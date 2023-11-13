@@ -1,6 +1,10 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from wakabi.tg_bot.callbacks import language_level
+from wakabi.tg_bot.callbacks.types import (
+    TrainingExerciseStatus,
+    language_level_data,
+    training_data,
+)
 
 
 def language_level_markup() -> InlineKeyboardMarkup:
@@ -10,10 +14,40 @@ def language_level_markup() -> InlineKeyboardMarkup:
         *[
             InlineKeyboardButton(
                 text=level,
-                callback_data=language_level.new(level=level),
+                callback_data=language_level_data.new(level=level),
             )
             for level in levels
         ],
         row_width=2,
+    )
+    return keyboard
+
+
+def training_markup(
+    word_id: int,
+    correct_count: int = 0,
+    incorrect_count: int = 0,
+) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.row_width = 2
+    keyboard.add(
+        InlineKeyboardButton(
+            text="Знаю ✅",
+            callback_data=training_data.new(
+                status=TrainingExerciseStatus.passed,
+                word_id=word_id,
+                correct_count=correct_count + 1,
+                incorrect_count=incorrect_count,
+            ),
+        ),
+        InlineKeyboardButton(
+            text="Не знаю ❌",
+            callback_data=training_data.new(
+                status=TrainingExerciseStatus.fail,
+                word_id=word_id,
+                correct_count=correct_count,
+                incorrect_count=incorrect_count + 1,
+            ),
+        ),
     )
     return keyboard

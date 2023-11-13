@@ -15,11 +15,23 @@ def register_handlers(bot: AsyncTeleBot) -> None:
         commands=["start"],
         pass_bot=True,
     )
+    bot.register_message_handler(
+        handlers.training_handler,
+        commands=["training"],
+        pass_bot=True,
+    )
 
     bot.register_callback_query_handler(
         callbacks.language_level_callback,
         func=None,
-        config=callbacks.language_level.filter(),
+        config=callbacks.language_level_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        callbacks.training_callback,
+        func=None,
+        config=callbacks.training_data.filter(),
         pass_bot=True,
     )
 
@@ -34,6 +46,7 @@ class CallbackFilter(AdvancedCustomFilter):
 def main():
     settings = Settings()
     bot = AsyncTeleBot(settings.telegram_token)
+    bot.settings = settings
     bot.add_custom_filter(CallbackFilter())
     register_handlers(bot)
 
