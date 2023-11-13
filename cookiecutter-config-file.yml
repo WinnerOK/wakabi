@@ -1,0 +1,13 @@
+# This file contains values from Cookiecutter
+
+default_context:
+  project_name: "wakabi"
+  project_description: "Description for `wakabi`"
+  package_name: "wakabi"
+  git_platform: "github"
+  username: "WinnerOK"
+  git_repo_url: "https://github.com/WinnerOK/wakabi"
+  email: "danman339@gmail.com"
+  version: "0.1.0"
+  python_version: "3.9"
+  line_length: "88"
