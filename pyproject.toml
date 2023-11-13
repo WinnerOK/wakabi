@@ -14,6 +14,8 @@ homepage = "https://github.com/WinnerOK/wakabi"
 [tool.poetry.dependencies]  # https://python-poetry.org/docs/dependency-specification/
 python = "^3.9"
 pytelegrambotapi = "^4.14.0"
+pydantic-settings = "^2.0.3"
+aiohttp = "^3.8.6"
 
 [tool.poetry.group.dev.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 black = "^23.9.1"
@@ -40,9 +42,9 @@ show_error_context = true
 show_traceback = true
 color_output = true
 # Uncomment this if you are using pydantic
-#plugins = [
-#  "pydantic.mypy"
-#]
+plugins = [
+  "pydantic.mypy"
+]
 
 strict = false  # https://mypy.readthedocs.io/en/stable/existing_code.html#introduce-stricter-options
 ignore_missing_imports = true
