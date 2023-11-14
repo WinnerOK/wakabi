@@ -1,5 +1,4 @@
 from telebot.async_telebot import AsyncTeleBot
-from telebot.callback_data import CallbackData
 from telebot.types import CallbackQuery
 
 from wakabi.tg_bot.callbacks.types import language_level_data

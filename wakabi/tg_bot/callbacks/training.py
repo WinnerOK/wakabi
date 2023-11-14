@@ -1,4 +1,3 @@
-from enum import Enum
 from textwrap import dedent
 
 import telebot.formatting as fmt
@@ -6,7 +5,7 @@ import telebot.formatting as fmt
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
-from wakabi.tg_bot.callbacks.types import TrainingExerciseStatus, training_data
+from wakabi.tg_bot.callbacks.types import training_data
 from wakabi.tg_bot.markups import training_markup
 
 
