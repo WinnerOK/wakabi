@@ -89,6 +89,16 @@ async def _get_word_definition_from_db(
     return result
 
 
+async def get_not_found_word_msg(
+    word: str,
+) -> str:
+    return (
+        f"Sorry bro, I don't know word: **{word}**! :("
+        f"Try find something information in [**chatGPT**]("
+        f"{HTTPS_PROTOCOL_STATIC + GPT_CHAT_WEB_URL.format(word)}"
+        f")"
+    )
+
 async def add_new_word_into_db(
     word: str,
     definition: str,
@@ -123,6 +133,7 @@ async def get_word_definition(
 
 async def definition_handler(message: Message, bot: AsyncTeleBot):
     word: str = message.text
+    bot_msg: str
     if word:
         word_definition_raw: str = await get_word_definition(word)
         if word_definition_raw:
@@ -130,13 +141,15 @@ async def definition_handler(message: Message, bot: AsyncTeleBot):
                 word=word,
                 word_definition_raw=word_definition_raw,
             )
-            await bot.send_message(
-                chat_id=message.chat.id,
-                text=word_definition_formatted,
-                parse_mode="MarkdownV2",
-                disable_web_page_preview=True,
-            )
-
+            bot_msg = word_definition_formatted
+        else:
+            bot_msg = await get_not_found_word_msg(word)
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=bot_msg,
+            parse_mode="MarkdownV2",
+            disable_web_page_preview=True,
+        )
         if not await _is_word_exists_in_db(word):
             await add_new_word_into_db(
                 word=word,
