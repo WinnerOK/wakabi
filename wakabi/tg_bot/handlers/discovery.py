@@ -13,8 +13,9 @@ async def discovery_handler(message: Message, bot: AsyncTeleBot):
     if found:
         word_id = 1
         definition = "is a wonderful term that I will definitely explain"
+        # TODO: probably add phonetics and audio message with pronunciation or a link to youglish
 
-        await bot.reply_to(
+        sent_message = await bot.reply_to(
             message,
             fmt.format_text(
                 fmt.mbold(unknown_expression),
