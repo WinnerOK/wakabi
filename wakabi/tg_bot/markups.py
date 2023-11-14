@@ -4,6 +4,7 @@ from wakabi.tg_bot.callbacks.types import (
     TrainingExerciseStatus,
     language_level_data,
     training_data,
+    word_discovery_data,
 )
 
 
@@ -47,6 +48,19 @@ def training_markup(
                 word_id=word_id,
                 correct_count=correct_count,
                 incorrect_count=incorrect_count + 1,
+            ),
+        ),
+    )
+    return keyboard
+
+
+def add_to_vocabulary_markup(word_id: int) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton(
+            text="Добавить в словарь🔎",
+            callback_data=word_discovery_data.new(
+                word_id=word_id,
             ),
         ),
     )

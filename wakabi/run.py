@@ -20,6 +20,10 @@ def register_handlers(bot: AsyncTeleBot) -> None:
         commands=["training"],
         pass_bot=True,
     )
+    bot.register_message_handler(
+        handlers.discovery_handler,
+        pass_bot=True,
+    )
 
     bot.register_callback_query_handler(
         callbacks.language_level_callback,
@@ -32,6 +36,13 @@ def register_handlers(bot: AsyncTeleBot) -> None:
         callbacks.training_callback,
         func=None,
         config=callbacks.training_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        callbacks.save_discovered_word_callback,
+        func=None,
+        config=callbacks.word_discovery_data.filter(),
         pass_bot=True,
     )
 

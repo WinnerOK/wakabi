@@ -17,3 +17,5 @@ training_data = CallbackData(
     "incorrect_count",
     prefix="tr",
 )
+
+word_discovery_data = CallbackData("word_id", prefix="word_disc")
