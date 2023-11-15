@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, PostgresDsn
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
@@ -6,18 +6,9 @@ from pydantic_settings import (
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="local.env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file="local.env", env_file_encoding="utf-8", extra='ignore')
 
     telegram_token: str = Field()
-
-    pg_host: str = Field()
-
-    pg_port: str = Field()
-
-    pg_database: str = Field()
-
-    pg_user: str = Field()
-
-    pg_password: str = Field()
+    pg_dsn: PostgresDsn = Field()
 
     training_answer_separator: str = "---"

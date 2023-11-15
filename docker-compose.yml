@@ -7,11 +7,7 @@ services:
     image: wakabi:latest
     environment:
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-      PG_HOST: ${PG_HOST}
-      PG_PORT: ${PG_PORT}
-      PG_DATABASE: ${PG_DATABASE}
-      PG_USER: ${PG_USER}
-      PG_PASSWORD: ${PG_PASSWORD}
+      PG_DSN: ${PG_DSN}
     depends_on:
       db-migration:
         condition: service_completed_successfully
