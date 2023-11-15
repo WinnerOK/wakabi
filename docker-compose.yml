@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: wakabi:latest
-    volumes:
-      - ./wakabi:/app/wakabi
     environment:
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       PG_HOST: ${PG_HOST}
@@ -14,6 +12,26 @@ services:
       PG_DATABASE: ${PG_DATABASE}
       PG_USER: ${PG_USER}
       PG_PASSWORD: ${PG_PASSWORD}
+    depends_on:
+      db-migration:
+        condition: service_completed_successfully
+
+  db-migration:
+    image: wakabi:latest
+    command: >
+      ./wakabi/entrypoint.sh
+    volumes:
+      - ./migrations:/app/postgres/migrations:ro
+    environment:
+      PG_HOST: ${PG_HOST}
+      PG_PORT: ${PG_PORT}
+      PG_DATABASE: ${PG_DATABASE}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:10-alpine
     volumes:
@@ -21,3 +39,13 @@ services:
     restart: always
     ports:
       - "45432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_DB: ${PG_DATABASE}
+      POSTGRES_INITDB_ARGS: '--locale=en_US.UTF-8'

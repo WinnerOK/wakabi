@@ -83,7 +83,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # will become mountpoint of our code
 WORKDIR /app
 # change it!
-CMD ["python", "-m", "wakabi.example"]
+CMD ["python", "-m", "wakabi.run"]
 
 
 ################################
@@ -95,8 +95,9 @@ COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY \
     ./wakabi \
     entrypoint.sh \
-/app/wakabi/
+    /app/wakabi/
 WORKDIR /app
+
 RUN chmod +x wakabi/entrypoint.sh
 CMD ["python", "-m", "wakabi.run"]
 # ENTRYPOINT wakabi/entrypoint.sh
