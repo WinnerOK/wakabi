@@ -22,7 +22,7 @@ async def training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
                     """,
                 ),
             ),
-            fmt.mspoiler("Here is the definition"),
+            fmt.mspoiler("Here is the definition"),  # replace with real definition
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,

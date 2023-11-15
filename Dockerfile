@@ -45,6 +45,8 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         # deps for installing poetry
         curl \
+        # deps for installing pgmigrate
+        libpq-dev \
         # deps for building python deps
         build-essential
 
@@ -80,7 +82,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 # will become mountpoint of our code
 WORKDIR /app
-
+# change it!
 CMD ["python", "-m", "wakabi.example"]
 
 
@@ -90,6 +92,10 @@ CMD ["python", "-m", "wakabi.example"]
 ################################
 FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
-COPY ./wakabi /app/wakabi
+COPY \
+    ./wakabi \
+    entrypoint.sh \
+/app/wakabi/
 WORKDIR /app
-CMD ["python", "-m", "wakabi.example"]
+RUN chmod +x wakabi/entrypoint.sh
+ENTRYPOINT wakabi/entrypoint.sh
