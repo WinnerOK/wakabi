@@ -9,7 +9,7 @@ async def get_word_by_user(
     return await conn.fetch(
         dedent(
             """
-            select word, definition from wakabi.word_knowledge
+            select word, word_id from wakabi.word_knowledge
             join wakabi.words
                 on word_knowledge.word_id = words.id
             where word_knowledge.user_id = $1 and word_knowledge.status = false
@@ -17,6 +17,21 @@ async def get_word_by_user(
             """,
         ),
         tg_id,
+    )
+    # you can access data by record['id']       change it
+
+
+async def get_definition_by_word_id(
+    conn: asyncpg.Connection, word_id: int
+) -> list[asyncpg.Record]:
+    return await conn.fetch(
+        dedent(
+            """
+            select word, definition from wakabi.words
+            where words.word_id = $1;
+            """,
+        ),
+        word_id,
     )
     # you can access data by record['id']       change it
 

@@ -20,7 +20,11 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
     bot.register_message_handler(
-        handlers.training_handler,
+        # handlers.training_handler,
+        partial(
+            handlers.training_handler,
+            pool=pool,
+        ),
         commands=["training"],
         pass_bot=True,
     )
@@ -52,14 +56,20 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_callback_query_handler(
-        callbacks.training_iteration_start_callback,
+        partial(
+            callbacks.training_iteration_start_callback,
+            pool=pool,
+        ),
         func=None,
         config=callbacks.training_iteration_start_data.filter(),
         pass_bot=True,
     )
 
     bot.register_callback_query_handler(
-        callbacks.training_iteration_end_callback,
+        partial(
+            callbacks.training_iteration_end_callback,
+            pool=pool,
+        ),
         func=None,
         config=callbacks.training_iteration_end_data.filter(),
         pass_bot=True,
