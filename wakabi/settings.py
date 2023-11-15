@@ -6,7 +6,11 @@ from pydantic_settings import (
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="local.env", env_file_encoding="utf-8", extra='ignore')
+    model_config = SettingsConfigDict(
+        env_file="local.env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     telegram_token: str = Field()
     pg_dsn: PostgresDsn = Field()

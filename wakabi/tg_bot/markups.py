@@ -15,7 +15,7 @@ def language_level_markup() -> InlineKeyboardMarkup:
         *[
             InlineKeyboardButton(
                 text=level,
-                callback_data=language_level_data.new(level=level),
+                callback_data=language_level_data.new(level=level.lower()),
             )
             for level in levels
         ],
