@@ -1,3 +1,5 @@
+import enum
+import re
 import typing
 
 import aiohttp
@@ -11,6 +13,20 @@ YANDEX_IMAGES_WEB_URL = 'yandex.ru/images/search?text={word}'
 YOUGLISH_ENGLISH_WEB_URL = 'youglish.com/pronounce/{word}/english'
 
 NO_DEFINITIONS_FOUND_API_MSG = 'No Definitions Found'
+
+DEFINITION_SANITIZER_PATTERN = r"\(.*?\)|\.$"
+MAX_COUNT_DEFINITIONS = 3
+
+
+class NetworkException(Exception):
+    pass
+
+
+class DefinitionFields(enum.Enum):
+    DEFINITION = 'definition'
+    DEFINITIONS = 'definitions'
+    MEANINGS = 'meanings'
+    PART_OF_SPEACH = 'partOfSpeech'
 
 
 def get_word_definition_formatted(
@@ -41,20 +57,40 @@ async def _get_word_definition_from_dictionary_api(
     word: str
 ) -> typing.Optional[str]:
     definitions: typing.List[str] = []
+    count_definitions: int = 0
     async with aiohttp.ClientSession() as session:
-        async with session.get(
-            HTTPS_PROTOCOL_STATIC + DICTIONARY_API_URL.format(word=word)
-        ) as response:
-            data = await response.json()
-            if (
-                isinstance(data, dict)
-                and
-                data.get('title') == NO_DEFINITIONS_FOUND_API_MSG
-            ):
-                return None
-            for definition in data[0]["meanings"]["definitions"]:
-                definitions.append(definition + '\n')
-            return ''.join(definitions)
+        try:
+            async with session.get(
+                HTTPS_PROTOCOL_STATIC + DICTIONARY_API_URL.format(word=word)
+            ) as response:
+                data = await response.json()
+                if (
+                    isinstance(data, dict)
+                    and
+                    data.get('title') == NO_DEFINITIONS_FOUND_API_MSG
+                ):
+                    return None
+                for definition in data[0][DefinitionFields.MEANINGS.value]:
+                    if count_definitions > MAX_COUNT_DEFINITIONS:
+                        break
+                    word_part_of_speech = definition[
+                        DefinitionFields.PART_OF_SPEACH.value
+                    ]
+                    word_definition_prepared = re.sub(
+                        DEFINITION_SANITIZER_PATTERN,
+                        "",
+                        definition[
+                            DefinitionFields.DEFINITIONS.value
+                        ][0][DefinitionFields.DEFINITION.value]
+                    )
+                    definitions.append(
+                        '**' + word_part_of_speech + '**' + '; ' +
+                        word_definition_prepared + '\n'
+                    )
+                    count_definitions += 1
+                return ''.join(definitions)
+        except Exception:
+            raise NetworkException
 
 
 async def is_word_exists_in_db(
@@ -93,9 +129,12 @@ async def get_not_found_word_msg(
     return (
         f"Sorry bro, I don't know word: **{word}**! :("
         f"Try find something information in [**chatGPT**]("
-        f"{HTTPS_PROTOCOL_STATIC + GPT_CHAT_WEB_URL.format(word)}"
-        f")"
+        f"{HTTPS_PROTOCOL_STATIC + GPT_CHAT_WEB_URL.format(word)})"
     )
+
+
+def get_network_exception_msg() -> str:
+    return "Sorry, something went wrong... Try again later!"
 
 
 async def add_new_word_into_db(
@@ -107,10 +146,9 @@ async def add_new_word_into_db(
         database='database', host='host'
     )
     await conn.execute(
-        'INSERT INTO words(word, definition, level) VALUES ($1, $2, $3)',
+        'INSERT INTO words(word, definition) VALUES ($1, $2)',
         word,
-        definition,
-        'B1'
+        definition
     )
 
 
