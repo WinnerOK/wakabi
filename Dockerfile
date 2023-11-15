@@ -92,4 +92,4 @@ FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./wakabi /app/wakabi
 WORKDIR /app
-CMD ["python", "-m", "wakabi.example"]
+CMD ["python", "-m", "wakabi.run"]

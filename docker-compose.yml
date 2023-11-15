@@ -7,3 +7,5 @@ services:
     image: wakabi:latest
     volumes:
       - ./wakabi:/app/wakabi
+  db:
+

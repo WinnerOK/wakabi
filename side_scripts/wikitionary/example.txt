@@ -1,0 +1,59 @@
+<page>
+    <title>free</title>
+    <ns>0</ns>
+    <id>19</id>
+    <revision>
+      <id>76461837</id>
+      <parentid>76448399</parentid>
+      <timestamp>2023-10-22T22:13:20Z</timestamp>
+      <contributor>
+        <username>Benwing2</username>
+        <id>2754475</id>
+      </contributor>
+      <comment>/* Galician */</comment>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+      <text bytes="41545" xml:space="preserve">{{also|-free}}
+==English==
+
+===Etymology===
+{{root|en|ine-pro|*preyH-}}
+From {{inh|en|enm|free}}, {{m|enm|fre}}, {{m|enm|freo}}, from {{inh|en|ang|fr
+ēo||free}}, from {{inh|en|gmw-pro|*frī}}, from {{inh|en|gem-pro|*frijaz||belo
+ved, not in bondage}}, from {{inh|en|ine-pro|*priHós||dear, beloved}}, from {
+{m|ine-pro|*preyH-||to love, please}}. Related to {{m|en|friend}}.
+{{box-top|cognates, etc}}
+Germanic cognates include {{cog|fy|frij||free}}, {{cog|nl|vrij||free}}, {{cog
+|nds|free||free}}, {{cog|de|frei||free}}, {{cog|da|-}}, {{cog|sv|-}} and {{co
+g|no|fri||free}}.
+
+Other cognates include {{cog|ru|приятель||friend}} and {{cog|sa|प्रिय|tr=priyá
+-||beloved}}.
+
+Germanic and Celtic are the only Indo-European language branches in which the
+ PIE word with the meaning of &quot;dear, beloved&quot; acquired the addition
+al meaning of &quot;free&quot; in the sense of &quot;not in bondage&quot;. Th
+is was an extension of the idea of &quot;characteristic of those who are dear
+ and beloved&quot;, in other words friends and tribe members (in contrast to
+unfree inhabitants from other tribes and prisoners of war, many of which were
+ among the slaves – compare the Latin use of [[liberi]] to mean both &quot;fr
+ee persons&quot; and &quot;children of a family&quot;).&lt;ref&gt;{{R:Etymonl
+ine}}&lt;/ref&gt;&lt;ref&gt;[https://www.dwds.de/wb/frei &quot;frei&quot;] in
+ Digitales Wörterbuch der deutschen Sprache&lt;/ref&gt;
+{{box-bottom}}
+The verb comes from {{inh|en|enm|freen}}, {{m|enm|freoȝen}}, from {{inh|en|an
+g|frēon}}, {{m|ang|frēoġan||to free; make free}}, from {{inh|en|gmw-pro|*frij
+ōn}}, from {{inh|en|gem-pro|*frijōną}}, from {{der|en|ine-pro|*preyH-}}.
+
+===Pronunciation===
+* {{enPR|frē}}, {{IPA|en|/fɹiː/|[fɹɪi̯]}}
+* {{audio|en|En-uk-free.ogg|Audio (UK)}}
+* {{audio|en|en-us-free.ogg|Audio (US)}}
+* {{rhymes|en|iː|s=1}}
+* {{homophones|en|three|q1=with [[th-fronting]]}}
+
+[[File:Free Beer.jpg|thumb|A sign advertising '''free''' beer (obtainable wit
+hout payment). It is a joke: every day the sign is read, the free beer will b
+e available &quot;tomorrow&quot; ([[ergo]] never).]]
+[[File:Buy one, get one free ^ - geograph.org.uk - 153952.jpg|thumb|A &quot;b
+uy one get one '''free'''&quot; si
