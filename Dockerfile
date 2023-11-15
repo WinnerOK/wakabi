@@ -98,4 +98,5 @@ COPY \
 /app/wakabi/
 WORKDIR /app
 RUN chmod +x wakabi/entrypoint.sh
-ENTRYPOINT wakabi/entrypoint.sh
+CMD ["python", "-m", "wakabi.run"]
+# ENTRYPOINT wakabi/entrypoint.sh

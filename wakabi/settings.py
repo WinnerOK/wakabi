@@ -2,7 +2,6 @@ from pydantic import Field
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
-    # PostgresDsn,
 )
 
 
@@ -10,8 +9,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     telegram_token: str = Field()
-
-    # postgres_dsn: PostgresDsn = Field()
 
     pg_host: str = Field()
 
