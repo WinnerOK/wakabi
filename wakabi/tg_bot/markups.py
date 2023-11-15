@@ -25,7 +25,7 @@ def language_level_markup() -> InlineKeyboardMarkup:
 
 
 def training_markup(
-    word_id: int,
+    word_id: int,  # TODO(mr-nikulin): replace with word (str)
     correct_count: int = 0,
     incorrect_count: int = 0,
 ) -> InlineKeyboardMarkup:
