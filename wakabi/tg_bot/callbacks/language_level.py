@@ -6,6 +6,7 @@ from telebot.types import CallbackQuery
 import wakabi.repository.user as user_repo
 
 from wakabi.tg_bot.callbacks.types import language_level_data
+from wakabi.tg_bot.handlers import get_help_message
 
 
 async def language_level_callback(
@@ -20,7 +21,9 @@ async def language_level_callback(
             call.from_user.id,
             callback_data["level"],
         )
-    await bot.send_message(
-        call.from_user.id,
+    await bot.edit_message_text(
         f"Запомнил, твой уровень {callback_data['level'].upper()}",
+        message_id=call.message.id,
+        chat_id=call.message.chat.id,
     )
+    await bot.send_message(call.message.chat.id, get_help_message())

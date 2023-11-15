@@ -25,6 +25,11 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
     bot.register_message_handler(
+        handlers.help_handler,
+        commands=["help"],
+        pass_bot=True,
+    )
+    bot.register_message_handler(
         handlers.discovery_handler,
         pass_bot=True,
     )
@@ -79,6 +84,8 @@ async def main():
     bot.settings = settings
     bot.add_custom_filter(CallbackFilter())
     register_handlers(bot, pool)
+    await bot.delete_my_commands()
+    await bot.set_my_commands(handlers.BOT_COMMANDS)
 
     try:
         await bot.polling()
