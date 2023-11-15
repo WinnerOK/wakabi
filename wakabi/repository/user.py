@@ -17,7 +17,7 @@ async def get_known_words(conn: asyncpg.Connection, tg_id: int) -> list[asyncpg.
     return await conn.fetch(
         dedent(
             """
-            select distinct w.word, w.id
+            select distinct w.word, w.pos, w.id
             from wakabi.words w
                 left join wakabi.word_knowledge wk on w.id = wk.word_id and wk.user_id=$1
             where
