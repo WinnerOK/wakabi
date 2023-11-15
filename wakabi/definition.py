@@ -5,7 +5,6 @@ import typing
 import aiohttp
 import asyncpg
 
-
 HTTPS_PROTOCOL_STATIC = 'https://'
 DICTIONARY_API_URL = 'api.dictionaryapi.dev/api/v2/entries/en/{word}'
 GPT_CHAT_WEB_URL = 'you.com/search?q={word}'
@@ -14,8 +13,11 @@ YOUGLISH_ENGLISH_WEB_URL = 'youglish.com/pronounce/{word}/english'
 
 NO_DEFINITIONS_FOUND_API_MSG = 'No Definitions Found'
 
-DEFINITION_SANITIZER_PATTERN = r"\(.*?\)|\.$"
 MAX_COUNT_DEFINITIONS = 3
+
+BRACKETS_SANITIZER_PATTERN = r"\(.*?\)|\."
+SPACE_SANITIZER_PATTERN = r"^\s+|\s+$"
+SPECIALIZED_SYMBOLS_PATTERN = r"([.?!\-])"
 
 
 class NetworkException(Exception):
@@ -27,6 +29,32 @@ class DefinitionFields(enum.Enum):
     DEFINITIONS = 'definitions'
     MEANINGS = 'meanings'
     PART_OF_SPEACH = 'partOfSpeech'
+
+
+def _format_definition(
+    definition_raw: str
+) -> str:
+    definition_without_brackets: str = re.sub(
+        BRACKETS_SANITIZER_PATTERN,
+        "",
+        definition_raw,
+    ) if re.search(BRACKETS_SANITIZER_PATTERN, definition_raw) \
+        else definition_raw
+    print(definition_without_brackets)
+    definition_without_useless_space: str = re.sub(
+        SPACE_SANITIZER_PATTERN,
+        "",
+        definition_without_brackets
+    ) if re.search(SPACE_SANITIZER_PATTERN, definition_without_brackets) \
+        else definition_without_brackets
+    definition_prepared: str = re.sub(
+        SPECIALIZED_SYMBOLS_PATTERN,
+        "",
+        definition_without_useless_space
+    ) if re.search(SPECIALIZED_SYMBOLS_PATTERN,
+                   definition_without_useless_space) \
+        else definition_without_useless_space
+    return definition_prepared
 
 
 def get_word_definition_formatted(
@@ -44,10 +72,10 @@ def get_word_definition_formatted(
         )
     )
     word_definition_formatted: str = (
-        f"**Определение** слова **{word}**:\n  {word_definition_raw}\n"
-        f"Полезное **медиа**: \n"
-        f"[Look at images by word **{word}**!]({yandex_content_by_word}) \n"
-        f"[Train your pronunciation for word **{word}**!]"
+        f"*Определение* слова *{word}*:\n{word_definition_raw}\n"
+        f"Полезное *медиа*: \n"
+        f"[Look at images by word *{word}*\!]({yandex_content_by_word}) \n"
+        f"[Train your pronunciation for word *{word}*\!]"
         f"({youglish_content_by_word})\n"
     )
     return word_definition_formatted
@@ -76,16 +104,14 @@ async def _get_word_definition_from_dictionary_api(
                     word_part_of_speech = definition[
                         DefinitionFields.PART_OF_SPEACH.value
                     ]
-                    word_definition_prepared = re.sub(
-                        DEFINITION_SANITIZER_PATTERN,
-                        "",
+                    word_definition_prepared = _format_definition(
                         definition[
                             DefinitionFields.DEFINITIONS.value
                         ][0][DefinitionFields.DEFINITION.value]
                     )
                     definitions.append(
-                        '**' + word_part_of_speech + '**' + '; ' +
-                        word_definition_prepared + '\n'
+                        '*' + word_part_of_speech + '*' + '; ' +
+                        word_definition_prepared + ';' + '\n'
                     )
                     count_definitions += 1
                 return ''.join(definitions)
@@ -95,41 +121,52 @@ async def _get_word_definition_from_dictionary_api(
 
 async def is_word_exists_in_db(
     word: str,
-) -> typing.Optional[str]:
-    conn = await asyncpg.connect(
-        user='user', password='password',
-        database='database', host='host'
-    )
-    result = await conn.fetch(
-        'SELECT word FROM words WHERE word = $1',
-        word
-    )
-    await conn.close()
-    return result
+    pool: asyncpg.Pool,
+) -> bool:
+    async with pool.acquire() as conn:
+        result = await conn.fetch(
+            'SELECT word FROM wakabi.words WHERE word = $1',
+            word
+        )
+        if result:
+            return True
+    return False
 
 
 async def _get_word_definition_from_db(
     word: str,
+    pool: asyncpg.Pool,
 ) -> typing.Optional[str]:
-    conn = await asyncpg.connect(
-        user='user', password='password',
-        database='database', host='host'
-    )
-    result = await conn.fetch(
-        'SELECT definition FROM words WHERE word = $1',
-        word
-    )
-    await conn.close()
-    return result
+    count_definitions: int = 0
+    results: typing.List[str] = []
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            'SELECT pos, definition FROM wakabi.words WHERE word = $1',
+            word
+        )
+        if rows:
+            for row in rows:
+                if count_definitions > MAX_COUNT_DEFINITIONS:
+                    break
+                word_definition_prepared = _format_definition(
+                    row['definition']
+                )
+                results.append(
+                    '*' + row['pos'] + '*' + ';' +
+                    word_definition_prepared + ';' + '\n'
+                )
+                count_definitions += 1
+            return ''.join(results)
+    return None
 
 
 async def get_not_found_word_msg(
     word: str,
 ) -> str:
     return (
-        f"Sorry bro, I don't know word: **{word}**! :("
-        f"Try find something information in [**chatGPT**]("
-        f"{HTTPS_PROTOCOL_STATIC + GPT_CHAT_WEB_URL.format(word)})"
+        f"Sorry bro, I don't know word: '*{word}*'\! :\(\n"
+        f"Try find something information in [*chatGPT*]("
+        f"{HTTPS_PROTOCOL_STATIC + GPT_CHAT_WEB_URL.format(word=word)})"
     )
 
 
@@ -140,24 +177,22 @@ def get_network_exception_msg() -> str:
 async def add_new_word_into_db(
     word: str,
     definition: str,
+    pool: asyncpg.Pool,
 ) -> None:
-    conn = await asyncpg.connect(
-        user='user', password='password',
-        database='database', host='host'
-    )
-    await conn.execute(
-        'INSERT INTO words(word, definition) VALUES ($1, $2)',
-        word,
-        definition
-    )
+    async with pool.acquire() as conn:
+        await conn.execute(
+            'INSERT INTO wakabi.words(word, definition) VALUES ($1, $2)',
+            word,
+            definition
+        )
 
 
 async def get_word_definition(
     word: str,
+    pool: asyncpg.Pool,
 ) -> typing.Optional[str]:
-    print("1" + word)
     word_definition_from_db: typing.Optional[str] = (
-        await _get_word_definition_from_db(word)
+        await _get_word_definition_from_db(word, pool)
     )
     if word_definition_from_db:
         return word_definition_from_db

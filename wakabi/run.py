@@ -25,7 +25,10 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
     bot.register_message_handler(
-        handlers.definition_handler,
+        partial(
+            handlers.definition_handler,
+            pool=pool
+        ),
         pass_bot=True,
     )
 
