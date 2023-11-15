@@ -155,6 +155,7 @@ async def add_new_word_into_db(
 async def get_word_definition(
     word: str,
 ) -> typing.Optional[str]:
+    print("1" + word)
     word_definition_from_db: typing.Optional[str] = (
         await _get_word_definition_from_db(word)
     )

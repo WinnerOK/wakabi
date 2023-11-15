@@ -1,3 +1,4 @@
+import asyncio
 import typing
 
 from telebot.async_telebot import AsyncTeleBot
@@ -6,7 +7,8 @@ from telebot.types import Message
 from wakabi import definition
 
 
-async def definition_handler(message: Message, bot: AsyncTeleBot, connection):
+async def definition_handler(message: Message, bot: AsyncTeleBot):
+    tasks = set()
     word: str = message.text
     try:
         word_definition_raw: typing.Optional[
@@ -31,6 +33,15 @@ async def definition_handler(message: Message, bot: AsyncTeleBot, connection):
             )
         )
         bot_msg = word_definition_formatted
+        if not await definition.is_word_exists_in_db(word):
+            task = asyncio.create_task(
+                definition.add_new_word_into_db(
+                    word=word,
+                    definition=word_definition_raw,
+                )
+            )
+            tasks.add(task)
+            task.add_done_callback(tasks.discard)
     else:
         bot_msg = await definition.get_not_found_word_msg(word)
     await bot.send_message(
@@ -39,11 +50,7 @@ async def definition_handler(message: Message, bot: AsyncTeleBot, connection):
         parse_mode="MarkdownV2",
         disable_web_page_preview=True,
     )
-    if not await definition.is_word_exists_in_db(word):
-        await definition.add_new_word_into_db(
-            word=word,
-            definition=word_definition_raw,
-        )
+
 
 
 
