@@ -7,3 +7,17 @@ services:
     image: wakabi:latest
     volumes:
       - ./wakabi:/app/wakabi
+    environment:
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      PG_HOST: ${PG_HOST}
+      PG_PORT: ${PG_PORT}
+      PG_DATABASE: ${PG_DATABASE}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+  db:
+    image: postgres:10-alpine
+    volumes:
+      - ./shared/pg_db:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - "45432:5432"
