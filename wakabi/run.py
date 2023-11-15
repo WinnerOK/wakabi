@@ -52,9 +52,23 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_callback_query_handler(
-        callbacks.training_callback,
+        callbacks.training_iteration_start_callback,
         func=None,
-        config=callbacks.training_data.filter(),
+        config=callbacks.training_iteration_start_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        callbacks.training_iteration_end_callback,
+        func=None,
+        config=callbacks.training_iteration_end_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        callbacks.exit_training_callback,
+        func=None,
+        config=callbacks.exit_training_data.filter(),  # correct_count = 3
         pass_bot=True,
     )
 

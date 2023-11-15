@@ -1,25 +1,17 @@
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
-from wakabi.tg_bot.markups import training_markup
-
-
-def parse_training_iterations_from_request(message: Message) -> int:
-    default_training_iterations = 5
-
-    training_iterations = default_training_iterations
-    splitted_message = message.text.split(" ")
-    if len(splitted_message) > 1:
-        training_iterations = int(splitted_message[1])
-    return training_iterations
+from wakabi.tg_bot.markups import training_iteration_start_markup
 
 
 async def training_handler(message: Message, bot: AsyncTeleBot):
-    word_id = 5  # fixme: get_next_word(message.from_user.id)
+    word = "dog"
+    word_id = 1  # TODO: get_next_word(message.from_user.id) - SELECT
 
-    # training_iterations = parse_training_iterations_from_request(message)
     await bot.send_message(
-        message.chat.id,
-        "Начинаем тренировку!",
-        reply_markup=training_markup(word_id),
+        text=word,
+        chat_id=message.chat.id,
+        reply_markup=training_iteration_start_markup(
+            word_id,
+        ),
     )

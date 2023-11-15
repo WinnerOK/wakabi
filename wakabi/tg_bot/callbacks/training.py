@@ -1,35 +1,66 @@
 from textwrap import dedent
-
-import telebot.formatting as fmt
-
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
-from wakabi.tg_bot.callbacks.types import training_data
-from wakabi.tg_bot.markups import training_markup
+from wakabi.tg_bot.callbacks.types import (
+    training_iteration_start_data,
+    training_iteration_end_data,
+)
+from wakabi.tg_bot.markups import (
+    training_iteration_start_markup,
+    training_iteration_end_markup,
+)
 
 
-async def training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
-    callback_data: dict = training_data.parse(callback_data=call.data)
+async def training_iteration_start_callback(
+    call: CallbackQuery, bot: AsyncTeleBot
+) -> None:
+    callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
     word_id = int(callback_data["word_id"]) + 1
+    # SELECT new word
+
+    word = "some_word_from_callback"
     await bot.edit_message_text(
-        fmt.format_text(
-            fmt.escape_markdown(
-                dedent(
-                    f"""
-                    {callback_data['status']=}
-                    {word_id=}
-                    """,
-                ),
-            ),
-            fmt.mspoiler("Here is the definition"),  # replace with real definition
+        text=word,
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        reply_markup=training_iteration_start_markup(  # TODO: pass statistics from request
+            word_id=word_id,
+            correct_count=2,  # hardcoded
+            incorrect_count=3,  # hardcoded
+        ),
+    )
+
+
+async def training_iteration_end_callback(
+    call: CallbackQuery, bot: AsyncTeleBot
+) -> None:
+    callback_data: dict = training_iteration_end_data.parse(callback_data=call.data)
+    word_id = int(callback_data["word_id"]) + 1
+    # TODO: UPDATE DB.
+    # TODO: select definition + word(str) by word_id
+    # edit message: word + definition
+    # 2 buttons: "Continue", "Exit"
+
+    word = "some_word_from_callback"
+    definition = "definition"
+    await bot.edit_message_text(
+        text=dedent(
+            f"""
+                {word}
+                {definition}
+            """
         ),
         chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        reply_markup=training_markup(
-            word_id,
-            int(callback_data["correct_count"]),
-            int(callback_data["incorrect_count"]),
+        message_id=call.message.id,
+        reply_markup=training_iteration_end_markup(  # TODO: pass statistics from request
+            previous_word_id=word_id,
+            correct_count=2,  # hardcoded
+            incorrect_count=3,  # hardcoded
         ),
-        parse_mode="MarkdownV2",
     )
+
+
+async def exit_training_callback(query: CallbackQuery, bot: AsyncTeleBot) -> None:
+    print("in exit_training_callback")
+    pass
