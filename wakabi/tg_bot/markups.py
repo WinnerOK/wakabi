@@ -27,7 +27,7 @@ def language_level_markup() -> InlineKeyboardMarkup:
 
 
 def training_iteration_start_markup(
-    word_id: int,  # TODO(mr-nikulin): replace with word (str)
+    word_id: int,
     correct_count: int = 0,
     incorrect_count: int = 0,
 ) -> InlineKeyboardMarkup:
@@ -37,7 +37,7 @@ def training_iteration_start_markup(
         InlineKeyboardButton(
             text="Знаю ✅",
             callback_data=training_iteration_end_data.new(
-                status=TrainingExerciseStatus.passed,
+                status=str(TrainingExerciseStatus.passed),
                 word_id=word_id,
                 correct_count=correct_count + 1,
                 incorrect_count=incorrect_count,
@@ -46,14 +46,14 @@ def training_iteration_start_markup(
         InlineKeyboardButton(
             text="Не знаю ❌",
             callback_data=training_iteration_end_data.new(
-                status=TrainingExerciseStatus.fail,
+                status=str(TrainingExerciseStatus.fail),
                 word_id=word_id,
                 correct_count=correct_count,
                 incorrect_count=incorrect_count + 1,
             ),
         ),
         InlineKeyboardButton(
-            text="Закончить",  # TODO(mr-nikulin): add pretty symbol
+            text="Закончить",  # TODO(mr-nikulin): add symbol for 'Закончить'
             callback_data=exit_training_data.new(
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,
@@ -65,7 +65,6 @@ def training_iteration_start_markup(
 
 def training_iteration_end_markup(
     previous_word_id: int,
-    # previous_status: TrainingExerciseStatus,
     correct_count: int,
     incorrect_count: int,
 ) -> InlineKeyboardMarkup:
@@ -73,16 +72,15 @@ def training_iteration_end_markup(
     keyboard.row_width = 2
     keyboard.add(
         InlineKeyboardButton(
-            text="Next",  # TODO(mr-nikulin): add pretty symbol
+            text="Дальше",  # TODO(mr-nikulin): add symbol for 'Дальше'
             callback_data=training_iteration_start_data.new(
-                # status=previous_status,
                 word_id=previous_word_id,
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,
             ),
         ),
         InlineKeyboardButton(
-            text="Exit",  # TODO(mr-nikulin): add pretty symbol
+            text="Закончить",  # TODO(mr-nikulin): add symbol for 'Закончить'
             callback_data=exit_training_data.new(
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,

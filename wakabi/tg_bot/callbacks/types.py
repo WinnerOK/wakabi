@@ -10,12 +10,11 @@ class TrainingExerciseStatus(str, Enum):
     fail = "fail"
 
 
-training_iteration_start_data = CallbackData(  # строка 64 байта
-    # "status",
+training_iteration_start_data = CallbackData(
     "word_id",
     "correct_count",
     "incorrect_count",
-    prefix="tr_st",  # сделать короче
+    prefix="tr_st",
 )
 
 
@@ -31,7 +30,7 @@ training_iteration_end_data = CallbackData(  # code duplication
 exit_training_data = CallbackData(
     "correct_count",
     "incorrect_count",
-    prefix="exit_training",
+    prefix="ex_tr",
 )
 
 
