@@ -64,29 +64,19 @@ async def training_iteration_end_callback(
             word_id,
         )
 
-    word: str
-    definition: str
-
-    if not pg_result:
-        print("IN if not pg_result")
-        word = "dummy_word"
-        definition = "dummy_definition"
-        pass  # TODO(mr-nikulin): handle bad pg_result
-    else:
-        word, definition = pg_result[0]["word"], pg_result[0]["definition"]
+    word, definition = pg_result[0]["word"], pg_result[0]["definition"]
 
     await bot.edit_message_text(
         text=dedent(
             f"""
                 {word}
 
-            {definition}
+                {definition}
             """,
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,
         reply_markup=training_iteration_end_markup(
-            previous_word_id=word_id,
             correct_count=correct_count,
             incorrect_count=incorrect_count,
         ),
@@ -95,11 +85,15 @@ async def training_iteration_end_callback(
 
 async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
     callback_data: dict = exit_training_data.parse(callback_data=call.data)
+    correct_count = int(callback_data["correct_count"])
+    incorrect_count = int(callback_data["incorrect_count"])
 
-    await bot.edit_message_text(
-        text=dedent(
+    text: str
+    if correct_count + incorrect_count == 0:
+        text = "That's all folks!"
+    else:
+        text = dedent(
             f"""
-                That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats!
                 {
                     build_statistics_str(
                         correct_answers_counter=int(callback_data["correct_count"]),
@@ -107,7 +101,10 @@ async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None
                     )
                 }
             """,
-        ),
+        )
+
+    await bot.edit_message_text(
+        text=text,
         chat_id=call.message.chat.id,
         message_id=call.message.id,
     )
