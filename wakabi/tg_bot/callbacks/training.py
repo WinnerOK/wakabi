@@ -69,7 +69,7 @@ async def training_iteration_end_callback(
     )
 
     async with pool.acquire() as conn:
-        await training_repo.update_word_after_train(
+        await training_repo.update_word_after_training_iteration(
             conn,
             call.from_user.id,
             word_id,
