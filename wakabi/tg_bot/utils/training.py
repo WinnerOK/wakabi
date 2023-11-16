@@ -44,8 +44,6 @@ async def start_training_iteration(
         pg_result = await get_word_by_user(conn, message.from_user.id)
 
     # function = bot.send_message if send_new_message else bot.edit_message_text
-    # new_word: str
-    # new_word_id: int
     if not pg_result:  # code duplication
         if send_new_message:
             await bot.send_message(

@@ -15,7 +15,6 @@ from wakabi.tg_bot.callbacks.types import (
 )
 from wakabi.tg_bot.markups import (
     training_iteration_end_markup,
-    training_iteration_start_markup,
 )
 from wakabi.tg_bot.utils.training import build_statistics_str, start_training_iteration
 
@@ -96,15 +95,20 @@ async def training_iteration_end_callback(
 
 
 async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
-    # await bot.send_message(
-    #     text="That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats.",
-    # callback_data: dict = exit_training_data.parse(callback_data=call.data)
+    callback_data: dict = exit_training_data.parse(callback_data=call.data)
 
-    # await bot.edit_message_text(
-    #     text=build_statistics_str(
-    #         correct_answers_counter=int(callback_data["correct_count"]),
-    #         incorrect_answers_counter=int(callback_data["incorrect_count"]),
-    #     ),  # TODO: pass statistics here
-    #     chat_id=call.message.chat.id,
-    #     message_id=call.message.id,
-    # )
+    await bot.edit_message_text(
+        text=dedent(
+            f"""
+                That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats!
+                {
+                    build_statistics_str(
+                        correct_answers_counter=int(callback_data["correct_count"]),
+                        incorrect_answers_counter=int(callback_data["incorrect_count"]),
+                    )
+                }
+            """,
+        ),
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+    )
