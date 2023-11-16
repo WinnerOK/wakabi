@@ -31,30 +31,31 @@ class DefinitionFields(enum.Enum):
     PART_OF_SPEACH = 'partOfSpeech'
 
 
-def _format_definition(
-    definition_raw: str
+def _format_string(
+    string_raw: typing.Optional[str]
 ) -> str:
-    definition_without_brackets: str = re.sub(
+    if not string_raw:
+        return ''
+    string_without_brackets: str = re.sub(
         BRACKETS_SANITIZER_PATTERN,
         "",
-        definition_raw,
-    ) if re.search(BRACKETS_SANITIZER_PATTERN, definition_raw) \
-        else definition_raw
-    print(definition_without_brackets)
-    definition_without_useless_space: str = re.sub(
+        string_raw,
+    ) if re.search(BRACKETS_SANITIZER_PATTERN, string_raw) \
+        else string_raw
+    string_without_useless_space: str = re.sub(
         SPACE_SANITIZER_PATTERN,
         "",
-        definition_without_brackets
-    ) if re.search(SPACE_SANITIZER_PATTERN, definition_without_brackets) \
-        else definition_without_brackets
-    definition_prepared: str = re.sub(
+        string_without_brackets
+    ) if re.search(SPACE_SANITIZER_PATTERN, string_without_brackets) \
+        else string_without_brackets
+    string_prepared: str = re.sub(
         SPECIALIZED_SYMBOLS_PATTERN,
         "",
-        definition_without_useless_space
+        string_without_useless_space
     ) if re.search(SPECIALIZED_SYMBOLS_PATTERN,
-                   definition_without_useless_space) \
-        else definition_without_useless_space
-    return definition_prepared
+                   string_without_useless_space) \
+        else string_without_useless_space
+    return string_prepared
 
 
 def get_word_definition_formatted(
@@ -101,10 +102,10 @@ async def _get_word_definition_from_dictionary_api(
                 for definition in data[0][DefinitionFields.MEANINGS.value]:
                     if count_definitions > MAX_COUNT_DEFINITIONS:
                         break
-                    word_part_of_speech = definition[
+                    word_part_of_speech = _format_string(definition[
                         DefinitionFields.PART_OF_SPEACH.value
-                    ]
-                    word_definition_prepared = _format_definition(
+                    ])
+                    word_definition_prepared = _format_string(
                         definition[
                             DefinitionFields.DEFINITIONS.value
                         ][0][DefinitionFields.DEFINITION.value]
@@ -141,19 +142,28 @@ async def _get_word_definition_from_db(
     results: typing.List[str] = []
     async with pool.acquire() as conn:
         rows = await conn.fetch(
-            'SELECT pos, definition FROM wakabi.words WHERE word = $1',
+            'SELECT word_phonetics, '
+            'pos, definition FROM wakabi.words WHERE word = $1',
             word
         )
         if rows:
             for row in rows:
                 if count_definitions > MAX_COUNT_DEFINITIONS:
                     break
-                word_definition_prepared = _format_definition(
-                    row['definition']
+                res_prepared = ''
+                if row['pos']:
+                    res_prepared += (
+                        '*' + _format_string(row['pos']) + '*' + '; '
+                    )
+                if row['word_phonetics']:
+                    res_prepared += (
+                        _format_string(row['word_phonetics']) + '; '
+                    )
+                res_prepared += (
+                    _format_string(row['definition']) + '\n'
                 )
                 results.append(
-                    '*' + row['pos'] + '*' + ';' +
-                    word_definition_prepared + ';' + '\n'
+                    res_prepared
                 )
                 count_definitions += 1
             return ''.join(results)

@@ -49,7 +49,6 @@ async def definition_handler(
             task.add_done_callback(tasks.discard)
     else:
         bot_msg = await definition.get_not_found_word_msg(word)
-        print(bot_msg)
     await bot.send_message(
         chat_id=message.chat.id,
         text=bot_msg,
