@@ -37,7 +37,7 @@ def training_iteration_start_markup(
         InlineKeyboardButton(
             text="Знаю ✅",
             callback_data=training_iteration_end_data.new(
-                status=str(TrainingExerciseStatus.passed),
+                status=TrainingExerciseStatus.passed,
                 word_id=word_id,
                 correct_count=correct_count + 1,
                 incorrect_count=incorrect_count,
@@ -46,7 +46,7 @@ def training_iteration_start_markup(
         InlineKeyboardButton(
             text="Не знаю ❌",
             callback_data=training_iteration_end_data.new(
-                status=str(TrainingExerciseStatus.fail),
+                status=TrainingExerciseStatus.fail,
                 word_id=word_id,
                 correct_count=correct_count,
                 incorrect_count=incorrect_count + 1,
