@@ -36,6 +36,7 @@ async def training_iteration_start_callback(
     new_word: str
     new_word_id: int
     if not pg_result:
+        # слова закончились
         print("IN if not pg_result")
         new_word = "dummy_word"
         new_word_id = "0"
@@ -116,6 +117,10 @@ async def training_iteration_end_callback(
     )
 
 
-async def exit_training_callback(query: CallbackQuery, bot: AsyncTeleBot) -> None:
+async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
+    await bot.send_message(
+        text="Конец, а кто учил слова - тот молодец (тут будет статистика по тренировке)",
+        chat_id=call.message.chat.id,
+    )
     print("in exit_training_callback")  # TODO: implement me
     pass
