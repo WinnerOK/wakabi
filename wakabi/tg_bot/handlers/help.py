@@ -4,18 +4,19 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import BotCommand, Message
 
 BOT_COMMANDS = [
-    BotCommand("/start", "Сменить свой уровень владения языком"),
-    BotCommand("/help", "Вывести сообщение с доступными командами"),
-    BotCommand("/training", "Начать тренировку"),
+    BotCommand("/start", "Change your language proficiency level"),
+    BotCommand("/help", "Show this help message"),
+    BotCommand("/training", "Start a training"),
 ]
 
 
 def get_help_message() -> str:
     return (
-        "Доступные команды:\n"
+        "Available commangs:\n"
         + "\n".join([f"{cmd.command} - {cmd.description}" for cmd in BOT_COMMANDS])
-        + "\nА еще ты можешь просто спросить меня о незнакомом слове "
-        "или прислать мне субтитры твоего любимого сериала"
+        + "\nYou can also ask me about an unfamiliar word "
+          "or send me the subtitles of your favorite TV series (in .srt format) "
+          "so that I can show you unfamiliar words."
     )
 
 

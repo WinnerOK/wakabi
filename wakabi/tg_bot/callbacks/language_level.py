@@ -22,7 +22,7 @@ async def language_level_callback(
             callback_data["level"],
         )
     await bot.edit_message_text(
-        f"Запомнил, твой уровень {callback_data['level'].upper()}",
+        f"Your English level is {callback_data['level'].upper()}",
         message_id=call.message.id,
         chat_id=call.message.chat.id,
     )

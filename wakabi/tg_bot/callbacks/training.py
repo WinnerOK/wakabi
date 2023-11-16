@@ -120,7 +120,7 @@ async def training_iteration_end_callback(
 
 async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
     await bot.send_message(
-        text="Конец, а кто учил слова - тот молодец (тут будет статистика по тренировке)",
+        text="That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats.",
         chat_id=call.message.chat.id,
     )
     print("in exit_training_callback")  # TODO: implement me

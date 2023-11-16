@@ -23,7 +23,7 @@ async def training_handler(
     new_word_id: int
     if not pg_result:
         await bot.send_message(
-            text="Все слова выучены",
+            text="You have learned all words in your dictionary",
             chat_id=message.chat.id,
         )
         # print("IN if not pg_result")

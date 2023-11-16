@@ -35,7 +35,7 @@ def training_iteration_start_markup(
     keyboard.row_width = 2
     keyboard.add(
         InlineKeyboardButton(
-            text="Знаю ✅",
+            text="Know ✅",
             callback_data=training_iteration_end_data.new(
                 status=TrainingExerciseStatus.passed,
                 word_id=word_id,
@@ -44,7 +44,7 @@ def training_iteration_start_markup(
             ),
         ),
         InlineKeyboardButton(
-            text="Не знаю ❌",
+            text="Don't know ❌",
             callback_data=training_iteration_end_data.new(
                 status=TrainingExerciseStatus.fail,
                 word_id=word_id,
@@ -53,7 +53,7 @@ def training_iteration_start_markup(
             ),
         ),
         InlineKeyboardButton(
-            text="Закончить",  # TODO(mr-nikulin): add symbol for 'Закончить'
+            text="Finish 🏁",
             callback_data=exit_training_data.new(
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,
@@ -72,7 +72,7 @@ def training_iteration_end_markup(
     keyboard.row_width = 2
     keyboard.add(
         InlineKeyboardButton(
-            text="Дальше",  # TODO(mr-nikulin): add symbol for 'Дальше'
+            text="Next ➡️",
             callback_data=training_iteration_start_data.new(
                 word_id=previous_word_id,
                 correct_count=correct_count,
@@ -80,7 +80,7 @@ def training_iteration_end_markup(
             ),
         ),
         InlineKeyboardButton(
-            text="Закончить",  # TODO(mr-nikulin): add symbol for 'Закончить'
+            text="Finish 🏁",
             callback_data=exit_training_data.new(
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,
@@ -94,7 +94,7 @@ def add_to_vocabulary_markup(word: str) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
         InlineKeyboardButton(
-            text="Добавить в словарь🔎",
+            text="Save for trainings 🔎",
             callback_data=word_discovery_data.new(
                 word=word,
             ),
