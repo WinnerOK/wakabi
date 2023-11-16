@@ -132,7 +132,7 @@ async def get_word_definition(
 
 
 async def definition_handler(message: Message, bot: AsyncTeleBot):
-    word: str = message.text
+    word: str = message.text.strip().lower()
     bot_msg: str
     if word:
         word_definition_raw: str = await get_word_definition(word)
