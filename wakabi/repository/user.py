@@ -37,7 +37,8 @@ async def add_word_to_learn(conn: asyncpg.Connection, user_id: int, word: str):
             insert into wakabi.word_knowledge(user_id, word_id)
             select $1 as user_id, w.id as word_id
             from wakabi.words w
-            where w.word = $2;
+            where w.word = $2
+            on conflict do nothing ;
             """,
         ),
         user_id,
