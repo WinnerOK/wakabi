@@ -35,6 +35,14 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_message_handler(
+        partial(
+            handlers.definition_handler,
+            pool=pool
+        ),
+        pass_bot=True,
+    )
+
+    bot.register_message_handler(
         handlers.file_handler,
         content_types=["document"],
         pass_bot=True,
