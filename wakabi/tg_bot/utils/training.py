@@ -25,7 +25,7 @@ def build_statistics_str(
     )
     return dedent(
         f"""
-            Training is finished! Statistics are below:
+            That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats:
 
             Total answers: {total}
             Correct answers: {correct_answers_counter}
@@ -40,15 +40,15 @@ async def start_training_iteration(
     bot: AsyncTeleBot,
     pool: asyncpg.Pool,
     send_new_message: bool = True,
-    # previous_word_id: Optional[int] = None,
     correct_answers_counter: int = 0,
     incorrect_answers_counter: int = 0,
 ) -> None:
+    print("in start_training_iteration")
+    print(f"send_new_message = {send_new_message}")
     pg_result: list[asyncpg.Record]
     async with pool.acquire() as conn:
         pg_result = await get_word_by_user(conn, message.from_user.id)
 
-    # function = bot.send_message if send_new_message else bot.edit_message_text
     if not pg_result:  # code duplication
         if send_new_message:
             await bot.send_message(
@@ -59,7 +59,6 @@ async def start_training_iteration(
             await bot.edit_message_text(
                 text=dedent(
                     f"""
-                        All words are learned. You are breathtaking!
                         {
                             build_statistics_str(
                                 correct_answers_counter=correct_answers_counter,
