@@ -1,14 +1,20 @@
-import typing
-
+import dataclasses
 import enum
 import re
+import typing
 
 import aiohttp
 import asyncpg
+from telebot import formatting
 
 HTTPS_PROTOCOL_STATIC = "https://"
 DICTIONARY_API_URL = "api.dictionaryapi.dev/api/v2/entries/en/{word}"
-GPT_CHAT_WEB_URL = "you.com/search?q={word}"
+GPT_CHAT_WEB_URL = (
+    "you.com/search?q=Please, "
+    "give me definitions for word: '{word}'\n"
+    "If you can, make it in form like this: pos, phonetics, definition"
+    "&tbm=youchat"
+)
 YANDEX_IMAGES_WEB_URL = "yandex.ru/images/search?text={word}"
 YOUGLISH_ENGLISH_WEB_URL = "youglish.com/pronounce/{word}/english"
 
@@ -21,15 +27,26 @@ SPACE_SANITIZER_PATTERN = r"^\s+|\s+$"
 SPECIALIZED_SYMBOLS_PATTERN = r"([.?!\-])"
 
 
+@dataclasses.dataclass
+class WordData:
+    word: str
+    definition: typing.Optional[str] = None
+    pos: typing.Optional[str] = None
+    phonetics: typing.Optional[str] = None
+    voice_url: typing.Optional[str] = None
+
+
 class NetworkException(Exception):
     pass
 
 
 class DefinitionFields(enum.Enum):
+    AUDIO = "audio"
     DEFINITION = "definition"
     DEFINITIONS = "definitions"
     MEANINGS = "meanings"
     PART_OF_SPEACH = "partOfSpeech"
+    PHONETIC = "phonetic"
 
 
 def _format_string(
@@ -67,9 +84,30 @@ def _format_string(
     return string_prepared
 
 
-def get_word_definition_formatted(
+def _get_word_data_as_definitions(
+    word_data: typing.List[WordData],
+) -> str:
+    definitions: typing.List[str] = []
+    for data in word_data:
+        definition_prepared = ""
+        if data.pos:
+            definition_prepared += "*" + _format_string(data.pos) + "*" + "; "
+        if data.phonetics:
+            definition_prepared += _format_string(
+                formatting.escape_markdown(data.phonetics)
+            ) + "; "
+        definition_prepared += _format_string(
+            formatting.escape_markdown(data.definition)
+        ) + "\n"
+        definitions.append(
+            definition_prepared,
+        )
+    return ''.join(definitions)
+
+
+def get_word_info_formatted(
     word: str,
-    word_definition_raw: str,
+    word_data: typing.List[WordData],
 ) -> str:
     yandex_content_by_word: str = HTTPS_PROTOCOL_STATIC + YANDEX_IMAGES_WEB_URL.format(
         word=word,
@@ -80,20 +118,23 @@ def get_word_definition_formatted(
             word=word,
         )
     )
-    word_definition_formatted: str = (
-        f"*Определение* слова *{word}*:\n{word_definition_raw}\n"
-        f"Полезное *медиа*: \n"
+    word_data_definitions = _format_string(
+        _get_word_data_as_definitions(word_data)
+    )
+    word_info_formatted: str = (
+        f"*Definitions* of word *{word}*:\n{word_data_definitions}\n\n"
+        f"Useful *media* resources: \n"
         f"[Look at images by word *{word}*\\!]({yandex_content_by_word}) \n"
         rf"[Train your pronunciation for word *{word}*\!]"
         f"({youglish_content_by_word})\n"
     )
-    return word_definition_formatted
+    return word_info_formatted
 
 
-async def _get_word_definition_from_dictionary_api(
+async def _get_word_data_from_dictionary_api(
     word: str,
-) -> typing.Optional[str]:
-    definitions: list[str] = []
+) -> typing.List[WordData]:
+    results: typing.List[WordData] = []
     count_definitions: int = 0
     async with aiohttp.ClientSession() as session:
         try:
@@ -105,29 +146,25 @@ async def _get_word_definition_from_dictionary_api(
                     isinstance(data, dict)
                     and data.get("title") == NO_DEFINITIONS_FOUND_API_MSG
                 ):
-                    return None
+                    return results
                 for definition in data[0][DefinitionFields.MEANINGS.value]:
                     if count_definitions > MAX_COUNT_DEFINITIONS:
                         break
-                    word_part_of_speech = _format_string(
-                        definition[DefinitionFields.PART_OF_SPEACH.value],
-                    )
-                    word_definition_prepared = _format_string(
-                        definition[DefinitionFields.DEFINITIONS.value][0][
-                            DefinitionFields.DEFINITION.value
-                        ],
-                    )
-                    definitions.append(
-                        "*"
-                        + word_part_of_speech
-                        + "*"
-                        + "; "
-                        + word_definition_prepared
-                        + ";"
-                        + "\n",
+                    results.append(
+                        WordData(
+                            word=word,
+                            definition=definition[
+                                DefinitionFields.DEFINITIONS.value][0][
+                                DefinitionFields.DEFINITION.value
+                            ],
+                            phonetics=data[0][DefinitionFields.PHONETIC.value],
+                            pos=definition[
+                                DefinitionFields.PART_OF_SPEACH.value
+                            ],
+                        )
                     )
                     count_definitions += 1
-                return "".join(definitions)
+                return results
         except Exception:
             raise NetworkException
 
@@ -146,34 +183,43 @@ async def is_word_exists_in_db(
     return False
 
 
-async def _get_word_definition_from_db(
+async def _get_word_data_from_db(
     word: str,
     pool: asyncpg.Pool,
-) -> typing.Optional[str]:
+) -> typing.List[WordData]:
+    results: typing.List[WordData] = []
     count_definitions: int = 0
-    results: list[str] = []
     async with pool.acquire() as conn:
         rows = await conn.fetch(
-            "SELECT word_phonetics, "
-            "pos, definition FROM wakabi.words WHERE word = $1",
+            "SELECT definition, pos, word_phonetics, voice_url "
+            "FROM wakabi.words WHERE word = $1",
             word,
         )
         if rows:
             for row in rows:
                 if count_definitions > MAX_COUNT_DEFINITIONS:
                     break
-                res_prepared = ""
-                if row["pos"]:
-                    res_prepared += "*" + _format_string(row["pos"]) + "*" + "; "
-                if row["word_phonetics"]:
-                    res_prepared += _format_string(row["word_phonetics"]) + "; "
-                res_prepared += _format_string(row["definition"]) + "\n"
                 results.append(
-                    res_prepared,
+                    WordData(
+                        word=word,
+                        definition=row["definition"],
+                        pos=row["pos"],
+                        phonetics=row["word_phonetics"],
+                        voice_url=row["voice_url"],
+                    )
                 )
                 count_definitions += 1
-            return "".join(results)
-    return None
+    return results
+
+
+def get_word_voice_url(
+    word_data: typing.List[WordData]
+) -> typing.List[str]:
+    word_voice_urls: typing.List[str] = []
+    for data in word_data:
+        if data.voice_url:
+            word_voice_urls.append(data.voice_url)
+    return word_voice_urls
 
 
 async def get_not_found_word_msg(
@@ -193,29 +239,37 @@ def get_network_exception_msg() -> str:
 async def add_new_word_into_db(
     word: str,
     definition: str,
+    phonetics: typing.Optional[str],
+    pos: typing.Optional[str],
     pool: asyncpg.Pool,
 ) -> None:
     async with pool.acquire() as conn:
         await conn.execute(
-            "INSERT INTO wakabi.words(word, definition) VALUES ($1, $2)",
+            "INSERT INTO wakabi.words("
+            "word, definition, word_phonetics, pos"
+            ") VALUES ($1, $2, $3, $4)",
             word,
             definition,
+            phonetics,
+            pos
         )
 
 
-async def get_word_definition(
+async def get_word_data(
     word: str,
     pool: asyncpg.Pool,
-) -> typing.Optional[str]:
-    word_definition_from_db: typing.Optional[str] = await _get_word_definition_from_db(
-        word,
-        pool,
+) -> typing.List[WordData]:
+    word_data_from_db: typing.List[WordData] = (
+        await _get_word_data_from_db(
+            word,
+            pool,
+        )
     )
-    if word_definition_from_db:
-        return word_definition_from_db
-    word_definition_from_dictionary_api: typing.Optional[
-        str
-    ] = await _get_word_definition_from_dictionary_api(
+    if word_data_from_db:
+        return word_data_from_db
+    word_data_from_dictionary_api: typing.List[
+        WordData
+    ] = await _get_word_data_from_dictionary_api(
         word,
     )
-    return word_definition_from_dictionary_api
+    return word_data_from_dictionary_api

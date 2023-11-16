@@ -19,43 +19,61 @@ async def definition_handler(
     tasks = set()
     word: str = message.text.strip().lower()
     try:
-        word_definition_raw: typing.Optional[
-            str
-        ] = await definition.get_word_definition(
+        word_data: typing.List[
+            definition.WordData
+        ] = await definition.get_word_data(
             word,
             pool,
         )
     except definition.NetworkException:
         bot_msg = definition.get_network_exception_msg()
-        await bot.send_message(
-            chat_id=message.chat.id,
+        await bot.reply_to(
+            message,
             text=bot_msg,
             parse_mode="MarkdownV2",
             disable_web_page_preview=True,
         )
         return
-    if word_definition_raw:
-        word_definition_formatted: str = definition.get_word_definition_formatted(
-            word=word,
-            word_definition_raw=word_definition_raw,
-        )
-        bot_msg = word_definition_formatted
-        if not await definition.is_word_exists_in_db(word, pool):
-            task = asyncio.create_task(
-                definition.add_new_word_into_db(
-                    word=word,
-                    definition=word_definition_raw,
-                    pool=pool,
-                ),
+    if word_data:
+        word_info_formatted: str = (
+            definition.get_word_info_formatted(
+                word=word,
+                word_data=word_data,
             )
-            tasks.add(task)
-            task.add_done_callback(tasks.discard)
+        )
+        bot_msg = word_info_formatted
+        if not await definition.is_word_exists_in_db(word, pool):
+            for data in word_data:
+                task = asyncio.create_task(
+                    definition.add_new_word_into_db(
+                        word=word,
+                        definition=data.definition,
+                        phonetics=data.phonetics,
+                        pos=data.pos,
+                        pool=pool,
+                    ),
+                )
+                tasks.add(task)
+                task.add_done_callback(tasks.discard)
     else:
         bot_msg = await definition.get_not_found_word_msg(word)
-    await bot.send_message(
-        chat_id=message.chat.id,
-        text=bot_msg,
-        parse_mode="MarkdownV2",
-        disable_web_page_preview=True,
-        reply_markup=add_to_vocabulary_markup(word) if word_definition_raw else None,
+    word_voices_url: typing.List[str] = definition.get_word_voice_url(
+        word_data
     )
+    if len(set(word_voices_url)) == 1:
+        await bot.send_voice(
+            chat_id=message.chat.id,
+            voice=word_voices_url[0],
+            caption=bot_msg,
+            parse_mode="MarkdownV2",
+            reply_markup=add_to_vocabulary_markup(word),
+        )
+    else:
+        await bot.reply_to(
+            message,
+            text=bot_msg,
+            parse_mode="MarkdownV2",
+            disable_web_page_preview=True,
+            reply_markup=add_to_vocabulary_markup(word) if word_data
+            else None,
+        )
