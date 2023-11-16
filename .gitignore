@@ -272,3 +272,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/osx,python,pycharm,windows,visualstudiocode
 
 shared/pg_db/*
+nltk_data/*

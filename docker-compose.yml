@@ -8,6 +8,8 @@ services:
     environment:
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       PG_DSN: ${PG_DSN}
+    volumes:
+      - ./nltk_data:/root/nltk_data
     depends_on:
       db-migration:
         condition: service_completed_successfully
