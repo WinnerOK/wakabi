@@ -12,7 +12,7 @@ async def definition_handler(
     message: Message, bot: AsyncTeleBot, pool: asyncpg.Pool,
 ):
     tasks = set()
-    word: str = message.text
+    word: str = message.text.strip().lower()
     try:
         word_definition_raw: typing.Optional[
             str
