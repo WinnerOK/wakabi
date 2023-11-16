@@ -11,7 +11,6 @@ class TrainingExerciseStatus(str, Enum):
 
 
 training_iteration_start_data = CallbackData(
-    "word_id",
     "correct_count",
     "incorrect_count",
     prefix="tr_st",
