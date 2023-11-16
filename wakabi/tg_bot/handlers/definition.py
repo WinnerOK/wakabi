@@ -57,5 +57,5 @@ async def definition_handler(
         text=bot_msg,
         parse_mode="MarkdownV2",
         disable_web_page_preview=True,
-        reply_markup=add_to_vocabulary_markup(word),
+        reply_markup=add_to_vocabulary_markup(word) if word_definition_raw else None,
     )
