@@ -9,6 +9,7 @@ import wakabi.repository.training as training_repo
 
 from wakabi.tg_bot.callbacks.types import (
     TrainingExerciseStatus,
+    exit_training_data,
     training_iteration_end_data,
     training_iteration_start_data,
 )
@@ -16,6 +17,7 @@ from wakabi.tg_bot.markups import (
     training_iteration_end_markup,
     training_iteration_start_markup,
 )
+from wakabi.tg_bot.utils.training import build_statistics_str, start_training_iteration
 
 
 async def training_iteration_start_callback(
@@ -24,39 +26,14 @@ async def training_iteration_start_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
-    previous_word_id = int(
-        callback_data["word_id"],
-    )  # TODO(mr-nikulin): pass to PG request
-    correct_count = int(callback_data["correct_count"])
-    incorrect_count = int(callback_data["incorrect_count"])
 
-    pg_result: list[asyncpg.Record]
-    async with pool.acquire() as conn:
-        pg_result = await training_repo.get_word_by_user(conn, call.from_user.id)
-
-    new_word: str
-    new_word_id: int
-    if not pg_result:
-        # слова закончились
-        print("IN if not pg_result")
-        new_word = "dummy_word"
-        new_word_id = "0"
-        pass  # TODO(mr-nikulin): handle bad pg_result
-    else:
-        new_word, new_word_id = (
-            pg_result[0]["word"],
-            pg_result[0]["word_id"],
-        )
-
-    await bot.edit_message_text(
-        text=new_word,
-        chat_id=call.message.chat.id,
-        message_id=call.message.id,
-        reply_markup=training_iteration_start_markup(
-            word_id=new_word_id,
-            correct_count=correct_count,
-            incorrect_count=incorrect_count,
-        ),
+    await start_training_iteration(
+        message=call.message,
+        bot=bot,
+        pool=pool,
+        send_new_message=False,
+        correct_answers_counter=int(callback_data["correct_count"]),
+        incorrect_answers_counter=int(callback_data["incorrect_count"]),
     )
 
 
@@ -119,9 +96,15 @@ async def training_iteration_end_callback(
 
 
 async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:
-    await bot.send_message(
-        text="That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats.",
-        chat_id=call.message.chat.id,
-    )
-    print("in exit_training_callback")  # TODO: implement me
-    pass
+    # await bot.send_message(
+    #     text="That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats.",
+    # callback_data: dict = exit_training_data.parse(callback_data=call.data)
+
+    # await bot.edit_message_text(
+    #     text=build_statistics_str(
+    #         correct_answers_counter=int(callback_data["correct_count"]),
+    #         incorrect_answers_counter=int(callback_data["incorrect_count"]),
+    #     ),  # TODO: pass statistics here
+    #     chat_id=call.message.chat.id,
+    #     message_id=call.message.id,
+    # )

@@ -208,8 +208,12 @@ async def get_word_definition(
     pool: asyncpg.Pool,
 ) -> typing.Optional[str]:
     word_definition_from_db: typing.Optional[str] = await _get_word_definition_from_db(
+<<<<<<< HEAD
         word,
         pool,
+=======
+        word, pool
+>>>>>>> 5a83a8e (Add training statistics)
     )
     if word_definition_from_db:
         return word_definition_from_db
