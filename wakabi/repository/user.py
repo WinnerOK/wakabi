@@ -17,7 +17,7 @@ async def get_known_words(conn: asyncpg.Connection, tg_id: int) -> list[asyncpg.
     return await conn.fetch(
         dedent(
             """
-            select distinct w.word, w.pos, w.id
+            select w.word
             from wakabi.words w
                 left join wakabi.word_knowledge wk on w.id = wk.word_id and wk.user_id=$1
             where
@@ -28,3 +28,18 @@ async def get_known_words(conn: asyncpg.Connection, tg_id: int) -> list[asyncpg.
         tg_id,
     )
     # you can access data by record['id']
+
+
+async def add_words_to_learn(conn: asyncpg.Connection, user_id: int, words: list[str]):
+    await conn.execute(
+        dedent(
+            """
+            insert into wakabi.word_knowledge(user_id, word_id)
+            select $1 as user_id, w.id as word_id
+            from wakabi.words w
+            where w.word in $2;
+            """
+        ),
+        user_id,
+        words,
+    )
