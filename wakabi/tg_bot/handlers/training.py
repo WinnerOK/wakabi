@@ -3,9 +3,9 @@ import asyncpg
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
-from wakabi.tg_bot.markups import training_iteration_start_markup
-
 import wakabi.repository.training as training_repo
+
+from wakabi.tg_bot.markups import training_iteration_start_markup
 
 
 async def training_handler(

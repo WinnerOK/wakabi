@@ -1,15 +1,20 @@
-import asyncio
-import asyncpg
 import typing
+
+import asyncio
+
+import asyncpg
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from wakabi import definition
+from wakabi.tg_bot.markups import add_to_vocabulary_markup
 
 
 async def definition_handler(
-    message: Message, bot: AsyncTeleBot, pool: asyncpg.Pool,
+    message: Message,
+    bot: AsyncTeleBot,
+    pool: asyncpg.Pool,
 ):
     tasks = set()
     word: str = message.text.strip().lower()
@@ -30,11 +35,9 @@ async def definition_handler(
         )
         return
     if word_definition_raw:
-        word_definition_formatted: str = (
-            definition.get_word_definition_formatted(
-                word=word,
-                word_definition_raw=word_definition_raw,
-            )
+        word_definition_formatted: str = definition.get_word_definition_formatted(
+            word=word,
+            word_definition_raw=word_definition_raw,
         )
         bot_msg = word_definition_formatted
         if not await definition.is_word_exists_in_db(word, pool):
@@ -43,7 +46,7 @@ async def definition_handler(
                     word=word,
                     definition=word_definition_raw,
                     pool=pool,
-                )
+                ),
             )
             tasks.add(task)
             task.add_done_callback(tasks.discard)
@@ -54,4 +57,5 @@ async def definition_handler(
         text=bot_msg,
         parse_mode="MarkdownV2",
         disable_web_page_preview=True,
+        reply_markup=add_to_vocabulary_markup(word),
     )

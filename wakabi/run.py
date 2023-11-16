@@ -44,8 +44,8 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
 
     bot.register_message_handler(
         partial(
-          handlers.file_handler,
-          pool=pool,
+            handlers.file_handler,
+            pool=pool,
         ),
         content_types=["document"],
         pass_bot=True,
@@ -89,7 +89,10 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_callback_query_handler(
-        callbacks.save_discovered_word_callback,
+        partial(
+            callbacks.save_discovered_word_callback,
+            pool=pool,
+        ),
         func=None,
         config=callbacks.word_discovery_data.filter(),
         pass_bot=True,

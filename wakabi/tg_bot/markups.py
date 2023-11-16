@@ -2,10 +2,10 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from wakabi.tg_bot.callbacks.types import (
     TrainingExerciseStatus,
-    language_level_data,
-    training_iteration_start_data,
-    training_iteration_end_data,
     exit_training_data,
+    language_level_data,
+    training_iteration_end_data,
+    training_iteration_start_data,
     word_discovery_data,
 )
 
@@ -90,13 +90,13 @@ def training_iteration_end_markup(
     return keyboard
 
 
-def add_to_vocabulary_markup(word_id: int) -> InlineKeyboardMarkup:
+def add_to_vocabulary_markup(word: str) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
         InlineKeyboardButton(
             text="Добавить в словарь🔎",
             callback_data=word_discovery_data.new(
-                word_id=word_id,
+                word=word,
             ),
         ),
     )

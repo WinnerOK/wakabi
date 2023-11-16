@@ -1,20 +1,21 @@
+from textwrap import dedent
+
 import asyncpg
 
-from textwrap import dedent
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
+import wakabi.repository.training as training_repo
+
 from wakabi.tg_bot.callbacks.types import (
     TrainingExerciseStatus,
-    training_iteration_start_data,
     training_iteration_end_data,
+    training_iteration_start_data,
 )
 from wakabi.tg_bot.markups import (
-    training_iteration_start_markup,
     training_iteration_end_markup,
+    training_iteration_start_markup,
 )
-
-import wakabi.repository.training as training_repo
 
 
 async def training_iteration_start_callback(
@@ -24,7 +25,7 @@ async def training_iteration_start_callback(
 ) -> None:
     callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
     previous_word_id = int(
-        callback_data["word_id"]
+        callback_data["word_id"],
     )  # TODO(mr-nikulin): pass to PG request
     correct_count = int(callback_data["correct_count"])
     incorrect_count = int(callback_data["incorrect_count"])
@@ -105,7 +106,7 @@ async def training_iteration_end_callback(
                 {word}
 
                 {definition}
-            """
+            """,
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,

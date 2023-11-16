@@ -4,7 +4,8 @@ import asyncpg
 
 
 async def get_word_by_user(
-    conn: asyncpg.Connection, user_tg_id: int
+    conn: asyncpg.Connection,
+    user_tg_id: int,
 ) -> list[asyncpg.Record]:
     return await conn.fetch(
         dedent(
@@ -25,7 +26,8 @@ async def get_word_by_user(
 
 
 async def get_definition_by_word_id(
-    conn: asyncpg.Connection, word_id: int
+    conn: asyncpg.Connection,
+    word_id: int,
 ) -> list[asyncpg.Record]:
     return await conn.fetch(
         dedent(

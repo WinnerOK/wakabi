@@ -34,4 +34,4 @@ exit_training_data = CallbackData(
 )
 
 
-word_discovery_data = CallbackData("word_id", prefix="word_disc")
+word_discovery_data = CallbackData("word", prefix="add_w")
