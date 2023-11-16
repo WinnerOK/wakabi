@@ -93,8 +93,12 @@ def _get_word_data_as_definitions(
         if data.pos:
             definition_prepared += "*" + _format_string(data.pos) + "*" + "; "
         if data.phonetics:
-            definition_prepared += _format_string(data.phonetics) + "; "
-        definition_prepared += _format_string(data.definition) + "\n"
+            definition_prepared += _format_string(
+                formatting.escape_markdown(data.phonetics)
+            ) + "; "
+        definition_prepared += _format_string(
+            formatting.escape_markdown(data.definition)
+        ) + "\n"
         definitions.append(
             definition_prepared,
         )
@@ -124,7 +128,6 @@ def get_word_info_formatted(
         rf"[Train your pronunciation for word *{word}*\!]"
         f"({youglish_content_by_word})\n"
     )
-    # word_info_escaped = formatting.escape_markdown(word_info_formatted) TODO
     return word_info_formatted
 
 
