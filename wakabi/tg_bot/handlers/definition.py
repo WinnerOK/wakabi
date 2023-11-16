@@ -1,7 +1,6 @@
 import typing
 
 import asyncio
-
 import asyncpg
 
 from telebot.async_telebot import AsyncTeleBot
