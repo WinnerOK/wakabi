@@ -5,20 +5,20 @@ from telebot.types import Message
 
 import wakabi.tg_bot.process as process
 
-
 from textwrap import dedent
 
 import aiohttp
 import asyncpg
 
-
-allowed_extensions = [".txt",  ".srt"]
+allowed_extensions = [".txt", ".srt"]
 # TODO: get words from DB
 learning_words = ["hello", "world"]
 level_words = ["how", "are", "you"]
 
-
 import pysrt
+import wakabi.repository.user  as user_repo
+
+
 async def read_file(file_id: str, bot: AsyncTeleBot):
     file_url = await bot.get_file_url(file_id)
     async with aiohttp.ClientSession() as session:
@@ -31,38 +31,45 @@ async def read_file(file_id: str, bot: AsyncTeleBot):
     return file_content
 
 
-async def file_handler(message: Message, bot: AsyncTeleBot):
+async def file_handler(message: Message, bot: AsyncTeleBot, pool: asyncpg.Pool):
     if not message.document:
+        await bot.reply_to(message, "Expected a file attachment")
         return
-    
+
     file_name = message.document.file_name.lower()
     if not any(file_name.endswith(ext) for ext in allowed_extensions):
         await bot.reply_to(message, "Sorry, this file type is not supported yet.")
         return
 
-    await bot.reply_to(message, "Processing...")
+    wait_msg = await bot.reply_to(message, "Processing...")
 
     file_id = message.document.file_id
-    
     file_content = await read_file(file_id, bot)
 
-    words_to_learn = process.process_text(file_content, learning_words, level_words, words_limit=30)
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            known_words = [wr['word'] for wr in await user_repo.get_known_words(conn, message.from_user.id)]
 
-    if len(words_to_learn) == 0:
-        await bot.reply_to(message, "Sorry, I can't find any words to learn.")
-        return
+            words_to_learn = process.process_text(file_content, known_words, words_limit=30)
 
-    reply  = "Here's most popular words to learn from text: " + ", ".join(words_to_learn) + '.'
-    await bot.reply_to(message, reply)
+        if len(words_to_learn) == 0:
+            await bot.edit_message_text(
+                "By this moment you should be familiar with all words in the text!🎉",
+                message_id=wait_msg.message_id,
+                chat_id=wait_msg.chat.id,
+            )
+            return
 
-    # TODO: add words to db
-    # reply = "Do you want to add these words to your vocabulary?"
+        reply = "Here's most popular words to learn from text: " + ", ".join(words_to_learn) + '.'
+        await bot.edit_message_text(reply, message_id=wait_msg.message_id, chat_id=wait_msg.chat.id)
 
-    # await bot.send_message(
-    #     text=reply,
-    #     chat_id=message.chat.id,
-    #     reply_markup=add_parsed_words_markup(
-    #         words_to_learn
-    #     ),
-    # )
+        # TODO: add words to db
+        # reply = "Do you want to add these words to your vocabulary?"
 
+        # await bot.send_message(
+        #     text=reply,
+        #     chat_id=message.chat.id,
+        #     reply_markup=add_parsed_words_markup(
+        #         words_to_learn
+        #     ),
+        # )

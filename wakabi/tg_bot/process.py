@@ -17,6 +17,7 @@ stop_words = set(stopwords.words('english'))
 custom_stopwords = {'yeah', 'ye', 'gon', 'na', 'oh', 'uh', 'um', 'hmm', 'aha', 'hey', 'hi', 'hello'}
 stop_words.update(custom_stopwords)
 
+
 def get_wordnet_pos(treebank_tag):
     """ Convert the part-of-speech naming scheme from the Penn Treebank tag to the WordNet's scheme """
     if treebank_tag.startswith('J'):
@@ -35,7 +36,6 @@ def norm_word(word, pos):
     wordnet_pos = get_wordnet_pos(pos) or wordnet.NOUN
     return lemmatizer.lemmatize(word, pos=wordnet_pos).lower()
 
-a = 3
 
 def extract_words(text, words_limit=None):
     words_to_learn = set()
@@ -65,23 +65,8 @@ def filter_words(words_to_learn: list, exclude_words: set) -> list:
     return list(filter(lambda w: w not in exclude_words, words_to_learn))
 
 
-def process_file(file_path: str, learning_words: set, level_words: set, words_limit: int = None) -> set:
-    words_to_learn = set()
-    with open(file_path, 'r', encoding='utf-8') as f:
-        text = f.read()
-        words_to_learn = extract_words(text, words_limit)
-
-    # Assuming 'NN' (noun) for simplicity
-    learning_words_norm = set(
-        map(lambda w: norm_word(w, 'NN'), learning_words))
-    level_words_norm = set(map(lambda w: norm_word(w, 'NN'), level_words))
-    return sorted(filter_words(words_to_learn, learning_words_norm, level_words_norm))
-
-
-def process_text(text: str, learning_words: set, level_words: set, words_limit: int = None) -> set:
+def process_text(text: str, familiar_words: list, words_limit: int = None) -> list[str]:
     words_to_learn = extract_words(text, words_limit)
     # Assuming 'NN' (noun) for simplicity
-    learning_words_norm = set(map(lambda w: norm_word(w, 'NN'), learning_words))
-    level_words_norm = set(map(lambda w: norm_word(w, 'NN'), level_words))
-    exclude_words = learning_words_norm | level_words_norm
+    exclude_words = set(map(lambda w: norm_word(w, 'NN'), familiar_words))
     return filter_words(words_to_learn, exclude_words)
