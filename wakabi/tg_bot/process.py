@@ -1,17 +1,9 @@
-import re
 import nltk
-from nltk.probability import FreqDist
-from nltk import pos_tag
-from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from pattern.text.en import singularize
-from nltk.corpus import stopwords
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
-from pattern.text.en import singularize
-
+from nltk.probability import FreqDist
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -41,7 +33,9 @@ def get_wordnet_pos(treebank_tag):
 
 def norm_word(word, pos):
     wordnet_pos = get_wordnet_pos(pos) or wordnet.NOUN
-    return singularize(lemmatizer.lemmatize(word, pos=wordnet_pos)).lower()
+    return lemmatizer.lemmatize(word, pos=wordnet_pos).lower()
+
+a = 3
 
 def extract_words(text, words_limit=None):
     words_to_learn = set()

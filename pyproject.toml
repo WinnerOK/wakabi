@@ -19,6 +19,8 @@ aiohttp = "^3.8.6"
 yandex-pgmigrate = "^1.0.7"
 psycopg2-binary = "^2.9.9"
 asyncpg = "^0.29.0"
+nltk = "^3.8.1"
+pysrt = "^1.1.2"
 
 [tool.poetry.group.dev.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 black = "^23.9.1"
