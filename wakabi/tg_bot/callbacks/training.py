@@ -33,14 +33,18 @@ async def training_iteration_start_callback(
     async with pool.acquire() as conn:
         pg_result = await training_repo.get_word_by_user(conn, call.from_user.id)
 
+    new_word: str
+    new_word_id: int
     if not pg_result:
         print("IN if not pg_result")
+        new_word = "dummy_word"
+        new_word_id = "0"
         pass  # TODO(mr-nikulin): handle bad pg_result
-
-    new_word, new_word_id = (
-        pg_result[0]["word"],
-        pg_result[0]["word_id"],
-    )
+    else:
+        new_word, new_word_id = (
+            pg_result[0]["word"],
+            pg_result[0]["word_id"],
+        )
 
     await bot.edit_message_text(
         text=new_word,
@@ -81,15 +85,18 @@ async def training_iteration_end_callback(
         pg_result = await training_repo.get_definition_by_word_id(
             conn,
             call.from_user.id,
-            word_id,
-            status,
         )
 
-    if not pg_result:
-        print("IN if not result")
-        pass  # TODO(mr-nikulin): handle bad pg_result
+    word: str
+    definition: str
 
-    word, definition = pg_result[0]["word"], pg_result[0]["definition"]
+    if not pg_result:
+        print("IN if not pg_result")
+        word = "dummy_word"
+        definition = "dummy_definition"
+        pass  # TODO(mr-nikulin): handle bad pg_result
+    else:
+        word, definition = pg_result[0]["word"], pg_result[0]["definition"]
 
     await bot.edit_message_text(
         text=dedent(

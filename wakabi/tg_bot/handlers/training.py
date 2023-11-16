@@ -19,14 +19,18 @@ async def training_handler(
     async with pool.acquire() as conn:
         pg_result = await training_repo.get_word_by_user(conn, user_id)
 
+    new_word: str
+    new_word_id: int
     if not pg_result:
         print("IN if not pg_result")
+        new_word = "dummy_word"
+        new_word_id = "0"
         pass  # TODO(mr-nikulin): handle bad pg_result
-
-    new_word, new_word_id = (
-        pg_result[0]["word"],
-        pg_result[0]["word_id"],
-    )
+    else:
+        new_word, new_word_id = (
+            pg_result[0]["word"],
+            pg_result[0]["word_id"],
+        )
 
     await bot.send_message(
         text=new_word,
