@@ -98,6 +98,28 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
 
+    bot.register_callback_query_handler(
+        partial(
+            callbacks.finish_tinder_session,
+            pool=pool,
+        ),
+        func=None,
+        config=callbacks.tinder_session_data.filter(
+            action=callbacks.TinderSessionAction.finish,
+        ),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        partial(
+            callbacks.process_tinder_session_choice,
+            pool=pool,
+        ),
+        func=None,
+        config=callbacks.tinder_session_data.filter(),
+        pass_bot=True,
+    )
+
 
 class CallbackFilter(AdvancedCustomFilter):
     key = "config"

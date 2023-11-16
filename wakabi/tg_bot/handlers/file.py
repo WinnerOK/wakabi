@@ -7,14 +7,14 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from wakabi.tg_bot import process
+from wakabi.tg_bot.markups import word_tinder_markup
 
 allowed_extensions = [".txt", ".srt"]
-# TODO: get words from DB
-learning_words = ["hello", "world"]
-level_words = ["how", "are", "you"]
 
 import pysrt
+import telebot.formatting as fmt
 
+import wakabi.repository.tinder_session as tinder_repo
 import wakabi.repository.user as user_repo
 
 
@@ -65,24 +65,25 @@ async def file_handler(message: Message, bot: AsyncTeleBot, pool: asyncpg.Pool):
             )
             return
 
-        reply = (
-            "Here's most popular words to learn from text: "
-            + ", ".join(words_to_learn)
-            + "."
-        )
         await bot.edit_message_text(
-            reply,
+            "Now I will send you unfamiliar words from the script and "
+            "you can choose whether to add them to you dictionary or not",
             message_id=wait_msg.message_id,
             chat_id=wait_msg.chat.id,
         )
 
-        # TODO: add words to db
-        # reply = "Do you want to add these words to your vocabulary?"
+        session_id, first_word = await tinder_repo.start_session(
+            conn,
+            message.from_user.id,
+            words_to_learn,
+        )
 
-        # await bot.send_message(
-        #     text=reply,
-        #     chat_id=message.chat.id,
-        #     reply_markup=add_parsed_words_markup(
-        #         words_to_learn
-        #     ),
-        # )
+        await bot.send_message(
+            message.chat.id,
+            f"Word {fmt.mbold(first_word)}\n\nWould you add this?",
+            reply_markup=word_tinder_markup(
+                session_id=session_id,
+                word=first_word,
+            ),
+            parse_mode="MarkdownV2",
+        )
