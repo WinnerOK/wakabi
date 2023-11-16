@@ -85,7 +85,7 @@ async def training_iteration_end_callback(
     async with pool.acquire() as conn:
         pg_result = await training_repo.get_definition_by_word_id(
             conn,
-            call.from_user.id,
+            word_id,
         )
 
     word: str
