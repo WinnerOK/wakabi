@@ -18,6 +18,11 @@ def build_statistics_str(
     total = correct_answers_counter + incorrect_answers_counter
     if not total:
         return None
+    ratio = (
+        correct_answers_counter / incorrect_answers_counter
+        if incorrect_answers_counter
+        else 1.0
+    )
     return dedent(
         f"""
             Training is finished! Statistics are below:
@@ -25,7 +30,7 @@ def build_statistics_str(
             Total answers: {total}
             Correct answers: {correct_answers_counter}
             Incorrect answers: {incorrect_answers_counter}
-            Accuracy: {correct_answers_counter/incorrect_answers_counter:.0%}
+            Accuracy: {ratio:.0%}
         """,
     )
 

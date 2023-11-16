@@ -45,7 +45,6 @@ async def training_iteration_end_callback(
     word_id = int(callback_data["word_id"])
     correct_count = int(callback_data["correct_count"])
     incorrect_count = int(callback_data["incorrect_count"])
-    print(f'callback_data["status"]={callback_data["status"]}')
     status = (
         TrainingExerciseStatus(callback_data["status"]) == TrainingExerciseStatus.passed
     )
@@ -81,7 +80,7 @@ async def training_iteration_end_callback(
             f"""
                 {word}
 
-                {definition}
+            {definition}
             """,
         ),
         chat_id=call.message.chat.id,
