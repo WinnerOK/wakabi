@@ -4,7 +4,7 @@ import asyncpg
 
 
 async def get_word_by_user(
-    conn: asyncpg.Connection, tg_user_id: int
+    conn: asyncpg.Connection, user_tg_id: int
 ) -> list[asyncpg.Record]:
     return await conn.fetch(
         dedent(
@@ -20,7 +20,7 @@ async def get_word_by_user(
             ORDER BY last_training ASC LIMIT 1;
             """,
         ),
-        tg_user_id,
+        user_tg_id,
     )
 
 
@@ -43,7 +43,7 @@ async def get_definition_by_word_id(
 
 async def update_word_after_training_iteration(
     conn: asyncpg.Connection,
-    tg_user_id: int,
+    user_tg_id: int,
     word_id: int,
     status: bool,
 ) -> None:
@@ -60,5 +60,5 @@ async def update_word_after_training_iteration(
         ),
         status,
         word_id,
-        tg_user_id,
+        user_tg_id,
     )
