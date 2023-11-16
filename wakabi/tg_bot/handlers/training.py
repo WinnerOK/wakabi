@@ -23,15 +23,15 @@ async def training_handler(
         print("IN if not pg_result")
         pass  # TODO(mr-nikulin): handle bad pg_result
 
-    word, word_id = (
+    new_word, new_word_id = (
         pg_result[0]["word"],
         pg_result[0]["word_id"],
-    )  # here word_id is id of the new word
+    )
 
     await bot.send_message(
-        text=word,
+        text=new_word,
         chat_id=message.chat.id,
         reply_markup=training_iteration_start_markup(
-            word_id,
+            new_word_id,
         ),
     )
