@@ -14,17 +14,14 @@ async def training_handler(
     pool: asyncpg.Pool,
 ):
     user_id = message.from_user.id
-    # word = "dog"
-    # word_id = 1
-    # select
 
     pg_result: list[asyncpg.Record]
-    async with pool.acquire() as conn:  # type: asyncpg.Connection
+    async with pool.acquire() as conn:
         pg_result = await training_repo.get_word_by_user(conn, user_id)
 
     if not pg_result:
         print("IN if not pg_result")
-        pass  # TODO: !!!
+        pass  # TODO(mr-nikulin): handle bad pg_result
 
     word, word_id = (
         pg_result[0]["word"],

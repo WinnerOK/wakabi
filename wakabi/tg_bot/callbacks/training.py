@@ -5,6 +5,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
 from wakabi.tg_bot.callbacks.types import (
+    TrainingExerciseStatus,
     training_iteration_start_data,
     training_iteration_end_data,
 )
@@ -22,30 +23,33 @@ async def training_iteration_start_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
-    word_id = int(callback_data["word_id"]) + 1  # TODO: pass to PG request
-    # SELECT new word
+    previous_word_id = int(
+        callback_data["word_id"]
+    )  # TODO(mr-nikulin): pass to PG request
+    correct_count = int(callback_data["correct_count"])
+    incorrect_count = int(callback_data["incorrect_count"])
 
     pg_result: list[asyncpg.Record]
-    async with pool.acquire() as conn:  # type: asyncpg.Connection
+    async with pool.acquire() as conn:
         pg_result = await training_repo.get_word_by_user(conn, call.from_user.id)
 
     if not pg_result:
         print("IN if not pg_result")
-        pass  # TODO: !!!
+        pass  # TODO(mr-nikulin): handle bad pg_result
 
-    word, word_id = (
+    new_word, new_word_id = (
         pg_result[0]["word"],
         pg_result[0]["word_id"],
-    )  # here word_id is id of the new word
+    )
 
     await bot.edit_message_text(
-        text=word,
+        text=new_word,
         chat_id=call.message.chat.id,
         message_id=call.message.id,
-        reply_markup=training_iteration_start_markup(  # TODO: pass statistics from request
-            word_id=word_id,
-            correct_count=2,  # hardcoded
-            incorrect_count=3,  # hardcoded
+        reply_markup=training_iteration_start_markup(
+            word_id=new_word_id,
+            correct_count=correct_count,
+            incorrect_count=incorrect_count,
         ),
     )
 
@@ -56,11 +60,15 @@ async def training_iteration_end_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_end_data.parse(callback_data=call.data)
-    word_id = int(callback_data["word_id"]) + 1
-    # status = bool(callback_data["status"]) # TODO: pass status
-    status = False  # TODO: pass status
+    word_id = int(callback_data["word_id"])
+    correct_count = int(callback_data["correct_count"])
+    incorrect_count = int(callback_data["incorrect_count"])
+    print(f'callback_data["status"]={callback_data["status"]}')
+    status = (
+        TrainingExerciseStatus(callback_data["status"]) == TrainingExerciseStatus.passed
+    )
 
-    async with pool.acquire() as conn:  # type: asyncpg.Connection
+    async with pool.acquire() as conn:
         await training_repo.update_word_after_train(
             conn,
             call.from_user.id,
@@ -69,7 +77,7 @@ async def training_iteration_end_callback(
         )
 
     pg_result: list[asyncpg.Record]
-    async with pool.acquire() as conn:  # type: asyncpg.Connection
+    async with pool.acquire() as conn:
         pg_result = await training_repo.get_definition_by_word_id(
             conn,
             call.from_user.id,
@@ -79,7 +87,7 @@ async def training_iteration_end_callback(
 
     if not pg_result:
         print("IN if not result")
-        pass  # TODO: !!!
+        pass  # TODO(mr-nikulin): handle bad pg_result
 
     word, definition = pg_result[0]["word"], pg_result[0]["definition"]
 
@@ -87,15 +95,16 @@ async def training_iteration_end_callback(
         text=dedent(
             f"""
                 {word}
+
                 {definition}
             """
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,
-        reply_markup=training_iteration_end_markup(  # TODO: pass statistics from request
+        reply_markup=training_iteration_end_markup(
             previous_word_id=word_id,
-            correct_count=2,  # hardcoded
-            incorrect_count=3,  # hardcoded
+            correct_count=correct_count,
+            incorrect_count=incorrect_count,
         ),
     )
 
