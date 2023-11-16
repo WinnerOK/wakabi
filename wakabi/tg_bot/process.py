@@ -22,7 +22,8 @@ nltk.download('omw-1.4')
 words_pattern = r'\b[a-zA-Z\'-]+\b'
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
-
+custom_stopwords = {'yeah', 'ye', 'gon', 'na', 'oh', 'uh', 'um', 'hmm', 'aha', 'hey', 'hi', 'hello'}
+stop_words.update(custom_stopwords)
 
 def get_wordnet_pos(treebank_tag):
     """ Convert the part-of-speech naming scheme from the Penn Treebank tag to the WordNet's scheme """
@@ -41,7 +42,6 @@ def get_wordnet_pos(treebank_tag):
 def norm_word(word, pos):
     wordnet_pos = get_wordnet_pos(pos) or wordnet.NOUN
     return singularize(lemmatizer.lemmatize(word, pos=wordnet_pos)).lower()
-
 
 def extract_words(text, words_limit=None):
     words_to_learn = set()
@@ -65,11 +65,11 @@ def extract_words(text, words_limit=None):
             [w[0] for w in freq_dist.most_common(words_limit)]
         )
     return sorted(words_to_learn, key=lambda w: freq_dist[w], reverse=True)
-        
 
 
 def filter_words(words_to_learn: list, exclude_words: set) -> list:
     return list(filter(lambda w: w not in exclude_words, words_to_learn))
+
 
 def process_file(file_path: str, learning_words: set, level_words: set, words_limit: int = None) -> set:
     words_to_learn = set()
@@ -78,9 +78,11 @@ def process_file(file_path: str, learning_words: set, level_words: set, words_li
         words_to_learn = extract_words(text, words_limit)
 
     # Assuming 'NN' (noun) for simplicity
-    learning_words_norm = set(map(lambda w: norm_word(w, 'NN'), learning_words))
+    learning_words_norm = set(
+        map(lambda w: norm_word(w, 'NN'), learning_words))
     level_words_norm = set(map(lambda w: norm_word(w, 'NN'), level_words))
     return sorted(filter_words(words_to_learn, learning_words_norm, level_words_norm))
+
 
 def process_text(text: str, learning_words: set, level_words: set, words_limit: int = None) -> set:
     words_to_learn = extract_words(text, words_limit)

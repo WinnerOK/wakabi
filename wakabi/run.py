@@ -29,12 +29,7 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         commands=["help"],
         pass_bot=True,
     )
-    bot.register_message_handler(
-        handlers.discovery_handler,
-        pass_bot=True,
-    )
 
-    # handler that triggers when any file is sent to the bot
     bot.register_message_handler(
         handlers.file_handler,
         content_types=["document"],
