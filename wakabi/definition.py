@@ -233,7 +233,9 @@ async def get_not_found_word_msg(
 
 
 def get_network_exception_msg() -> str:
-    return "Sorry, something went wrong... Try again later!"
+    return formatting.escape_markdown(
+        "Sorry, something went wrong... Try again later!"
+    )
 
 
 async def add_new_word_into_db(

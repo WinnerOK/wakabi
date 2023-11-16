@@ -7,6 +7,7 @@ from telebot.types import CallbackQuery
 
 import wakabi.repository.training as training_repo
 
+from wakabi import definition
 from wakabi.tg_bot.callbacks.types import (
     TrainingExerciseStatus,
     exit_training_data,
@@ -42,6 +43,7 @@ async def training_iteration_end_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_end_data.parse(callback_data=call.data)
+
     word_id = int(callback_data["word_id"])
     correct_count = int(callback_data["correct_count"])
     incorrect_count = int(callback_data["incorrect_count"])
@@ -64,15 +66,26 @@ async def training_iteration_end_callback(
             word_id,
         )
 
-    word, definition = pg_result[0]["word"], pg_result[0]["definition"]
+    word = pg_result[0]["word"]
 
+    word_info: str = definition.get_word_info_formatted(
+        word=word,
+        word_data=(
+            await definition.get_word_data(
+                word,
+                pool
+            )
+        ),
+    )
+
+    if callback_data['status'] == 'fail':
+        text = word_info
+    else:
+        text = "*Go next\? Press the button\!*"
     await bot.edit_message_text(
         text=dedent(
-            f"""
-                {word}
-
-                {definition}
-            """,
+            f"{word}\n\n"
+            f"{text}"
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,
@@ -80,6 +93,8 @@ async def training_iteration_end_callback(
             correct_count=correct_count,
             incorrect_count=incorrect_count,
         ),
+        parse_mode="MarkdownV2",
+        disable_web_page_preview=True,
     )
 
 
