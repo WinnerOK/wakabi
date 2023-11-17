@@ -1,6 +1,7 @@
+from typing import Optional
+
 from enum import Enum
 from textwrap import dedent
-from typing import Optional
 
 import asyncpg
 

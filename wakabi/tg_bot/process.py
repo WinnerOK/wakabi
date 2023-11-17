@@ -86,4 +86,6 @@ def process_text(
     words_to_learn = extract_words(text, None)
     # Assuming 'NN' (noun) for simplicity
     exclude_words = {norm_word(w, "NN") for w in familiar_words}
-    return filter_words(words_to_learn, exclude_words)[:min(words_limit, len(words_to_learn))]
+    return filter_words(words_to_learn, exclude_words)[
+        : min(words_limit, len(words_to_learn))
+    ]

@@ -18,9 +18,9 @@ from wakabi.tg_bot.markups import (
     training_iteration_end_markup,
 )
 from wakabi.tg_bot.utils.training import (
+    SortOrder,
     build_statistics_str,
     start_training_iteration,
-    SortOrder,
 )
 
 
@@ -82,19 +82,19 @@ async def training_iteration_end_callback(
         word_data=(
             await definition.get_word_data(
                 word,
-                pool
+                pool,
             )
         ),
     )
 
-    if callback_data['status'] == 'fail':
-        text = word_info
-    else:
-        text = "*Go next\? Press the button\!*"
+    text = (
+        word_info
+        if callback_data["status"] == "fail"
+        else "*Go next\\? Press the button\\!*"
+    )
     await bot.edit_message_text(
         text=dedent(
-            f"{word}\n\n"
-            f"{text}"
+            f"{word}\n\n{text}",
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,

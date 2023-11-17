@@ -45,7 +45,10 @@ async def get_definition_by_word_id(
 
 
 async def update_word_after_training_iteration(
-    conn: asyncpg.Connection, user_tg_id: int, word_id: int, user_knows_the_word: bool
+    conn: asyncpg.Connection,
+    user_tg_id: int,
+    word_id: int,
+    user_knows_the_word: bool,
 ) -> None:
     if user_knows_the_word:
         await conn.execute(
