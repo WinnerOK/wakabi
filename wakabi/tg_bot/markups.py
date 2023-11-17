@@ -66,6 +66,7 @@ def training_iteration_start_markup(
 
 
 def training_iteration_end_markup(
+    status: TrainingExerciseStatus,
     correct_count: int,
     incorrect_count: int,
 ) -> InlineKeyboardMarkup:
@@ -82,6 +83,7 @@ def training_iteration_end_markup(
         InlineKeyboardButton(
             text="Next ➡️",
             callback_data=training_iteration_start_data.new(
+                previous_status=status,
                 correct_count=correct_count,
                 incorrect_count=incorrect_count,
             ),

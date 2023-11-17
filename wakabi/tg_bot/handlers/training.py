@@ -15,4 +15,5 @@ async def training_handler(
         message=message,
         bot=bot,
         pool=pool,
+        user_id=message.from_user.id,
     )

@@ -1,6 +1,6 @@
-from typing import Optional
-
+from enum import Enum
 from textwrap import dedent
+from typing import Optional
 
 import asyncpg
 
@@ -9,6 +9,11 @@ from telebot.types import Message
 
 from wakabi.repository.training import get_word_by_user
 from wakabi.tg_bot.markups import training_iteration_start_markup
+
+
+class SortOrder(str, Enum):
+    asc = "ASC"
+    desc = "DESC"
 
 
 def build_statistics_str(
@@ -39,17 +44,21 @@ async def start_training_iteration(
     message: Message,
     bot: AsyncTeleBot,
     pool: asyncpg.Pool,
+    user_id: str,
     send_new_message: bool = True,
+    sort_by_true_count_order: SortOrder = SortOrder.desc,
     correct_answers_counter: int = 0,
     incorrect_answers_counter: int = 0,
 ) -> None:
-    print("in start_training_iteration")
-    print(f"send_new_message = {send_new_message}")
     pg_result: list[asyncpg.Record]
     async with pool.acquire() as conn:
-        pg_result = await get_word_by_user(conn, message.from_user.id)
+        pg_result = await get_word_by_user(
+            conn,
+            user_id,
+            order=sort_by_true_count_order,
+        )
 
-    if not pg_result:  # code duplication
+    if not pg_result:
         if send_new_message:
             await bot.send_message(
                 text="All words are learned. You are breathtaking!",

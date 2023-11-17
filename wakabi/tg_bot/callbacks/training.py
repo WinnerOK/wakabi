@@ -16,7 +16,11 @@ from wakabi.tg_bot.callbacks.types import (
 from wakabi.tg_bot.markups import (
     training_iteration_end_markup,
 )
-from wakabi.tg_bot.utils.training import build_statistics_str, start_training_iteration
+from wakabi.tg_bot.utils.training import (
+    build_statistics_str,
+    start_training_iteration,
+    SortOrder,
+)
 
 
 async def training_iteration_start_callback(
@@ -25,12 +29,19 @@ async def training_iteration_start_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
-
+    sort_order = (
+        SortOrder.asc
+        if TrainingExerciseStatus(callback_data["previous_status"])
+        == TrainingExerciseStatus.passed
+        else SortOrder.desc
+    )
     await start_training_iteration(
         message=call.message,
         bot=bot,
         pool=pool,
+        user_id=call.from_user.id,
         send_new_message=False,
+        sort_by_true_count_order=sort_order,
         correct_answers_counter=int(callback_data["correct_count"]),
         incorrect_answers_counter=int(callback_data["incorrect_count"]),
     )
@@ -45,16 +56,14 @@ async def training_iteration_end_callback(
     word_id = int(callback_data["word_id"])
     correct_count = int(callback_data["correct_count"])
     incorrect_count = int(callback_data["incorrect_count"])
-    status = (
-        TrainingExerciseStatus(callback_data["status"]) == TrainingExerciseStatus.passed
-    )
+    status = callback_data["status"]
 
     async with pool.acquire() as conn:
         await training_repo.update_word_after_training_iteration(
             conn,
             call.from_user.id,
             word_id,
-            status,
+            user_knows_the_word=(status == TrainingExerciseStatus.passed),
         )
 
     pg_result: list[asyncpg.Record]
@@ -76,7 +85,8 @@ async def training_iteration_end_callback(
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,
-        reply_markup=training_iteration_end_markup(
+        reply_markup=training_iteration_end_markup(  # pass status to iteration start
+            status=status,
             correct_count=correct_count,
             incorrect_count=incorrect_count,
         ),

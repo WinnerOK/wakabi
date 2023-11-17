@@ -11,12 +11,13 @@ class TrainingExerciseStatus(str, Enum):
 
 
 training_iteration_start_data = CallbackData(
+    "previous_status",
     "correct_count",
     "incorrect_count",
     prefix="tr_st",
 )
 
-training_iteration_end_data = CallbackData(  # code duplication
+training_iteration_end_data = CallbackData(
     "status",
     "word_id",
     "correct_count",
