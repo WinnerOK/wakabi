@@ -25,9 +25,9 @@ def build_statistics_str(
     if not total:
         return None
     ratio = (
-        correct_answers_counter / incorrect_answers_counter
-        if incorrect_answers_counter
-        else 1.0
+        correct_answers_counter / total
+        if total
+        else 0.0
     )
     return dedent(
         f"""
@@ -45,7 +45,7 @@ async def start_training_iteration(
     message: Message,
     bot: AsyncTeleBot,
     pool: asyncpg.Pool,
-    user_id: str,
+    user_id: int,
     send_new_message: bool = True,
     sort_by_true_count_order: SortOrder = SortOrder.desc,
     correct_answers_counter: int = 0,
