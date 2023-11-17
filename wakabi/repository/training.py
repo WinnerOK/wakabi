@@ -53,7 +53,6 @@ async def update_word_after_training_iteration(
     user_knows_the_word: bool,
 ) -> None:
     true_count_diff = 1 if user_knows_the_word else 0
-    # FIXME: why didn't we do proper table normalization
     await conn.execute(
         dedent(
             """
