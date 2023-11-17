@@ -30,12 +30,7 @@ async def training_iteration_start_callback(
     pool: asyncpg.Pool,
 ) -> None:
     callback_data: dict = training_iteration_start_data.parse(callback_data=call.data)
-    sort_order = (
-        SortOrder.asc
-        if TrainingExerciseStatus(callback_data["previous_status"])
-        == TrainingExerciseStatus.passed
-        else SortOrder.desc
-    )
+    sort_order = SortOrder.asc
     await start_training_iteration(
         message=call.message,
         bot=bot,

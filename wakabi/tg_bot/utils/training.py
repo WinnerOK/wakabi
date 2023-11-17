@@ -78,13 +78,14 @@ async def start_training_iteration(
                 message_id=message.id,
             )
     else:
-        new_word, new_word_id = (
+        new_word, new_word_id, new_word_pos = (
             pg_result[0]["word"],
             pg_result[0]["word_id"],
+            pg_result[0]["pos"],
         )
         if send_new_message:
             await bot.send_message(
-                text=new_word,
+                text=f"{new_word} ({new_word_pos})",
                 chat_id=message.chat.id,
                 reply_markup=training_iteration_start_markup(
                     word_id=new_word_id,
@@ -92,7 +93,7 @@ async def start_training_iteration(
             )
         else:
             await bot.edit_message_text(
-                text=new_word,
+                text=f"{new_word} ({new_word_pos})",
                 chat_id=message.chat.id,
                 message_id=message.id,
                 reply_markup=training_iteration_start_markup(
