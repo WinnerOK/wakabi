@@ -11,8 +11,8 @@ async def start_handler(message: Message, bot: AsyncTeleBot):
         message.chat.id,
         dedent(
             f"""
-            Привет, {message.from_user.full_name}!
-            Прежде, чем мы начнем, скажи, какой у тебя уровень владения языком
+            Hi, {message.from_user.full_name}!
+            What is your English proficiency level?
             """,
         ),
         reply_markup=language_level_markup(),
