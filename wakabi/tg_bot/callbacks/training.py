@@ -60,52 +60,56 @@ async def training_iteration_end_callback(
     incorrect_count = int(callback_data["incorrect_count"])
     status = callback_data["status"]
 
-    async with pool.acquire() as conn:
-        await training_repo.update_word_after_training_iteration(
-            conn,
-            call.from_user.id,
-            word_id,
-            user_knows_the_word=(status == TrainingExerciseStatus.passed),
-        )
-
-    pg_result: list[asyncpg.Record]
-    async with pool.acquire() as conn:
-        pg_result = await training_repo.get_definition_by_word_id(
-            conn,
-            word_id,
-        )
-
-    word = pg_result[0]["word"]
-
-    word_info: str = definition.get_word_info_formatted(
-        word=word,
-        word_data=(
-            await definition.get_word_data(
-                word,
-                pool,
+    async with pool.acquire() as conn:  # type: asyncpg.Connection
+        async with conn.transaction():
+            await training_repo.update_word_after_training_iteration(
+                conn,
+                call.from_user.id,
+                word_id,
+                user_knows_the_word=(status == TrainingExerciseStatus.passed),
             )
-        ),
-    )
 
-    text = (
-        word_info
-        if callback_data["status"] == "fail"
-        else "*Go next\\? Press the button\\!*"
-    )
-    await bot.edit_message_text(
-        text=dedent(
-            f"{word}\n\n{text}",
-        ),
-        chat_id=call.message.chat.id,
-        message_id=call.message.id,
-        reply_markup=training_iteration_end_markup(
-            status=status,
-            correct_count=correct_count,
-            incorrect_count=incorrect_count,
-        ),
-        parse_mode="MarkdownV2",
-        disable_web_page_preview=True,
-    )
+            if status != "fail":
+                call.data = training_iteration_start_data.new(
+                    previous_status=status,
+                    correct_count=correct_count,
+                    incorrect_count=incorrect_count,
+                )
+                await training_iteration_start_callback(call, bot, pool)
+                return
+
+            pg_result: list[asyncpg.Record]
+            pg_result = await training_repo.get_definition_by_word_id(
+                conn,
+                word_id,
+            )
+
+            word = pg_result[0]["word"]
+
+            word_info: str = definition.get_word_info_formatted(
+                word=word,
+                word_data=(
+                    await definition.get_word_data(
+                        word,
+                        conn,
+                    )
+                ),
+            )
+
+            await bot.edit_message_text(
+                text=dedent(
+                    f"{word}\n\n{word_info}",
+                ),
+                chat_id=call.message.chat.id,
+                message_id=call.message.id,
+                reply_markup=training_iteration_end_markup(
+                    status=status,
+                    correct_count=correct_count,
+                    incorrect_count=incorrect_count,
+                ),
+                parse_mode="MarkdownV2",
+                disable_web_page_preview=True,
+            )
 
 
 async def exit_training_callback(call: CallbackQuery, bot: AsyncTeleBot) -> None:

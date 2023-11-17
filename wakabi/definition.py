@@ -176,44 +176,42 @@ async def _get_word_data_from_dictionary_api(
 
 async def is_word_exists_in_db(
     word: str,
-    pool: asyncpg.Pool,
+    conn: asyncpg.Connection,
 ) -> bool:
-    async with pool.acquire() as conn:
-        result = await conn.fetch(
-            "SELECT word FROM wakabi.words WHERE word = $1",
-            word,
-        )
-        if result:
-            return True
+    result = await conn.fetch(
+        "SELECT word FROM wakabi.words WHERE word = $1",
+        word,
+    )
+    if result:
+        return True
     return False
 
 
 async def _get_word_data_from_db(
     word: str,
-    pool: asyncpg.Pool,
+    conn: asyncpg.Connection,
 ) -> list[WordData]:
     results: list[WordData] = []
     count_definitions: int = 0
-    async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT definition, pos, word_phonetics, voice_url "
-            "FROM wakabi.words WHERE word = $1",
-            word,
-        )
-        if rows:
-            for row in rows:
-                if count_definitions > MAX_COUNT_DEFINITIONS:
-                    break
-                results.append(
-                    WordData(
-                        word=word,
-                        definition=row["definition"],
-                        pos=row["pos"],
-                        phonetics=row["word_phonetics"],
-                        voice_url=row["voice_url"],
-                    ),
-                )
-                count_definitions += 1
+    rows = await conn.fetch(
+        "SELECT definition, pos, word_phonetics, voice_url "
+        "FROM wakabi.words WHERE word = $1",
+        word,
+    )
+    if rows:
+        for row in rows:
+            if count_definitions > MAX_COUNT_DEFINITIONS:
+                break
+            results.append(
+                WordData(
+                    word=word,
+                    definition=row["definition"],
+                    pos=row["pos"],
+                    phonetics=row["word_phonetics"],
+                    voice_url=row["voice_url"],
+                ),
+            )
+            count_definitions += 1
     return results
 
 
@@ -248,27 +246,26 @@ async def add_new_word_into_db(
     definition: str,
     phonetics: typing.Optional[str],
     pos: typing.Optional[str],
-    pool: asyncpg.Pool,
+    conn: asyncpg.Connection,
 ) -> None:
-    async with pool.acquire() as conn:
-        await conn.execute(
-            "INSERT INTO wakabi.words("
-            "word, definition, word_phonetics, pos"
-            ") VALUES ($1, $2, $3, $4)",
-            word,
-            definition,
-            phonetics,
-            pos,
-        )
+    await conn.execute(
+        "INSERT INTO wakabi.words("
+        "word, definition, word_phonetics, pos"
+        ") VALUES ($1, $2, $3, $4)",
+        word,
+        definition,
+        phonetics,
+        pos,
+    )
 
 
 async def get_word_data(
     word: str,
-    pool: asyncpg.Pool,
+    conn: asyncpg.Connection,
 ) -> list[WordData]:
     word_data_from_db: list[WordData] = await _get_word_data_from_db(
         word,
-        pool,
+        conn,
     )
     if word_data_from_db:
         return word_data_from_db

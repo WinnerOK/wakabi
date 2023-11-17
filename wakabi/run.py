@@ -84,7 +84,7 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     bot.register_callback_query_handler(
         callbacks.exit_training_callback,
         func=None,
-        config=callbacks.exit_training_data.filter(),  # correct_count = 3
+        config=callbacks.exit_training_data.filter(),
         pass_bot=True,
     )
 

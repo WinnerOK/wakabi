@@ -24,11 +24,7 @@ def build_statistics_str(
     total = correct_answers_counter + incorrect_answers_counter
     if not total:
         return None
-    ratio = (
-        correct_answers_counter / total
-        if total
-        else 0.0
-    )
+    ratio = correct_answers_counter / total if total else 0.0
     return dedent(
         f"""
             That's all folks! Who learned the words, that's the real deal. We'll see how we did in the training stats:
@@ -53,6 +49,7 @@ async def start_training_iteration(
 ) -> None:
     pg_result: list[asyncpg.Record]
     async with pool.acquire() as conn:
+        # TODO: получать слова не по word_id, а по word
         pg_result = await get_word_by_user(
             conn,
             user_id,
