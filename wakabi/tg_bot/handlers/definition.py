@@ -63,16 +63,14 @@ async def definition_handler(
         await bot.send_voice(
             chat_id=message.chat.id,
             voice=word_voices_url[0],
-            caption=bot_msg,
             parse_mode="MarkdownV2",
-            reply_markup=add_to_vocabulary_markup(word),
         )
-    else:
-        await bot.reply_to(
-            message,
-            text=bot_msg,
-            parse_mode="MarkdownV2",
-            disable_web_page_preview=True,
-            reply_markup=add_to_vocabulary_markup(word) if word_data
-            else None,
-        )
+
+    await bot.reply_to(
+        message,
+        text=bot_msg,
+        parse_mode="MarkdownV2",
+        disable_web_page_preview=True,
+        reply_markup=add_to_vocabulary_markup(word) if word_data
+        else None,
+    )
