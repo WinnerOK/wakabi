@@ -85,7 +85,7 @@ async def training_iteration_end_callback(
         ),
         chat_id=call.message.chat.id,
         message_id=call.message.id,
-        reply_markup=training_iteration_end_markup(  # pass status to iteration start
+        reply_markup=training_iteration_end_markup(
             status=status,
             correct_count=correct_count,
             incorrect_count=incorrect_count,
