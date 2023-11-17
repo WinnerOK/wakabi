@@ -1,6 +1,10 @@
 # wakabi
 
-Description for `wakabi`
+Wakabi - a telegram bot to learn new English words.
+Bot can find definitions for unknown words, extract unfamiliar words from subtitles (`.srt`) 
+and provide you with repetition trainings
+
+[Wiki link with more info](https://cs-uni.ru/index.php?title=DDF23_Приложение_для_эффективного_изучения_слов_иностранного_языка#.D0.A2.D0.B5.D1.85.D0.BD.D0.BE.D0.BB.D0.BE.D0.B3.D0.B8.D1.87.D0.B5.D1.81.D0.BA.D0.B8.D0.B9_.D1.81.D1.82.D0.B5.D0.BA)
 
 ## Installation
 
